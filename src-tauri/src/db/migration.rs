@@ -79,6 +79,16 @@ pub const MIGRATIONS: &[Migration] = &[
         name: "create_compliance_templates",
         up: include_str!("../../migrations/014_create_compliance_templates.up.sql"),
     },
+    Migration {
+        version: 15,
+        name: "add_weaviate_fields",
+        up: include_str!("../../migrations/015_add_weaviate_fields.up.sql"),
+    },
+    Migration {
+        version: 16,
+        name: "create_chunks_fts",
+        up: include_str!("../../migrations/016_create_chunks_fts.up.sql"),
+    },
 ];
 
 pub fn run_migrations(conn: &mut Connection) -> AppResult<()> {

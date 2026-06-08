@@ -1,6 +1,6 @@
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::io::{Write, BufReader, BufRead};
 
 use serde::{Deserialize, Serialize};
 
@@ -69,10 +69,10 @@ impl PythonManager {
         }
 
         let content = match script_name {
-            "parser.py"     => include_str!("../../python/parser.py"),
-            "embedder.py"   => include_str!("../../python/embedder.py"),
+            "parser.py" => include_str!("../../python/parser.py"),
+            "embedder.py" => include_str!("../../python/embedder.py"),
             "ocr_parser.py" => include_str!("../../python/ocr_parser.py"),
-            "transcriber.py"=> include_str!("../../python/transcriber.py"),
+            "transcriber.py" => include_str!("../../python/transcriber.py"),
             other => {
                 return Err(AppError::Other(format!(
                     "Unknown Python script '{}' — add it to resolve_script()",
@@ -82,12 +82,14 @@ impl PythonManager {
         };
 
         std::fs::write(&target, content).map_err(|e| {
-            AppError::Other(format!("Failed to write {} to app_data_dir: {}", script_name, e))
+            AppError::Other(format!(
+                "Failed to write {} to app_data_dir: {}",
+                script_name, e
+            ))
         })?;
 
         Ok(target)
     }
-
 
     fn ensure_venv(&self) -> AppResult<PathBuf> {
         let venv_path = self.app_data_dir.join("python_venv");
@@ -99,21 +101,23 @@ impl PythonManager {
 
         if !python_exe.exists() {
             tracing::info!("Creating Python virtual environment...");
-            
+
             // Assuming `python` or `python3` is available globally
             let sys_python = if cfg!(windows) { "python" } else { "python3" };
-            
+
             let status = Command::new(sys_python)
                 .args(["-m", "venv", venv_path.to_str().unwrap()])
                 .status()
                 .map_err(|e| AppError::Other(format!("Failed to run python -m venv: {}", e)))?;
 
             if !status.success() {
-                return Err(AppError::Other("Failed to create virtual environment".into()));
+                return Err(AppError::Other(
+                    "Failed to create virtual environment".into(),
+                ));
             }
 
             tracing::info!("Installing Python requirements...");
-            
+
             let pip_exe = if cfg!(windows) {
                 venv_path.join("Scripts").join("pip.exe")
             } else {
@@ -145,11 +149,12 @@ impl PythonManager {
 
             let mut pip_cmd = Command::new(&pip_exe);
             pip_cmd.arg("install");
-            
+
             if req_path.exists() {
                 pip_cmd.arg("-r").arg(&req_path);
             } else {
-                pip_cmd.arg("markitdown")
+                pip_cmd
+                    .arg("markitdown")
                     .arg("torch")
                     .arg("sentence-transformers")
                     .arg("faster-whisper")
@@ -163,7 +168,9 @@ impl PythonManager {
                 .map_err(|e| AppError::Other(format!("Failed to run pip: {}", e)))?;
 
             if !pip_status.success() {
-                return Err(AppError::Other("Failed to install Python dependencies".into()));
+                return Err(AppError::Other(
+                    "Failed to install Python dependencies".into(),
+                ));
             }
         }
 
@@ -212,19 +219,21 @@ impl PythonManager {
         let req = ParseRequest {
             file_path: file_path.to_string_lossy().to_string(),
         };
-        
+
         let json_line = serde_json::to_string(&req).unwrap() + "\n";
 
         if let Some(mut stdin) = child.stdin.take() {
-            stdin.write_all(json_line.as_bytes())
+            stdin
+                .write_all(json_line.as_bytes())
                 .map_err(|e| AppError::Other(format!("Failed to write to python stdin: {}", e)))?;
         }
 
         let mut stdout = child.stdout.take().expect("Failed to open stdout");
         let mut reader = BufReader::new(&mut stdout);
-        
+
         let mut response_line = String::new();
-        reader.read_line(&mut response_line)
+        reader
+            .read_line(&mut response_line)
             .map_err(|e| AppError::Other(format!("Failed to read python stdout: {}", e)))?;
 
         let _ = child.wait();
@@ -247,90 +256,49 @@ impl PythonManager {
         }
     }
     pub fn embed_chunks(&self, chunks: Vec<String>) -> AppResult<Vec<Vec<f32>>> {
-        let python_exe = self.ensure_venv()?;
-
-        let mut script_path = std::env::current_dir()
-            .unwrap_or_default()
-            .join("python")
-            .join("embedder.py");
-
-        if !script_path.exists() {
-            script_path = std::env::current_dir()
-                .unwrap_or_default()
-                .join("src-tauri")
-                .join("python")
-                .join("embedder.py");
-        }
-
-        let actual_script_path = if script_path.exists() {
-            script_path
-        } else {
-            let target_path = self.app_data_dir.join("embedder.py");
-            if !target_path.exists() {
-                let script_content = include_str!("../../python/embedder.py");
-                std::fs::write(&target_path, script_content)
-                    .map_err(|e| AppError::Other(format!("Failed to write embedder.py: {}", e)))?;
-            }
-            target_path
-        };
-
-        let mut child = Command::new(&python_exe)
-            .arg(&actual_script_path)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::inherit())
-            .spawn()
-            .map_err(|e| AppError::Other(format!("Failed to spawn Python embedder: {}", e)))?;
-
         #[derive(Serialize)]
         struct EmbedRequest {
-            chunks: Vec<String>,
+            texts: Vec<String>,
         }
 
         #[derive(Deserialize)]
         struct EmbedResponse {
-            status: String,
-            embeddings: Option<Vec<Vec<f32>>>,
-            error: Option<String>,
-            traceback: Option<String>,
+            embeddings: Vec<Vec<f32>>,
         }
 
-        let req = EmbedRequest { chunks };
-        let json_line = serde_json::to_string(&req).unwrap() + "\n";
+        let client = reqwest::blocking::Client::builder()
+            .timeout(std::time::Duration::from_secs(60))
+            .build()
+            .map_err(|e| AppError::Other(format!("Failed to build HTTP client: {}", e)))?;
 
-        if let Some(mut stdin) = child.stdin.take() {
-            stdin.write_all(json_line.as_bytes())
-                .map_err(|e| AppError::Other(format!("Failed to write to python stdin: {}", e)))?;
+        let resp = client
+            .post("http://127.0.0.1:8082/embed")
+            .json(&EmbedRequest { texts: chunks })
+            .send()
+            .map_err(|e| {
+                AppError::Other(format!("Failed to connect to local AI sidecar: {}", e))
+            })?;
+
+        if !resp.status().is_success() {
+            let err_msg = resp.text().unwrap_or_default();
+            return Err(AppError::Other(format!(
+                "Local AI sidecar returned error: {}",
+                err_msg
+            )));
         }
 
-        let mut stdout = child.stdout.take().expect("Failed to open stdout");
-        let mut reader = BufReader::new(&mut stdout);
-        
-        let mut response_line = String::new();
-        reader.read_line(&mut response_line)
-            .map_err(|e| AppError::Other(format!("Failed to read python stdout: {}", e)))?;
+        let res: EmbedResponse = resp
+            .json()
+            .map_err(|e| AppError::Other(format!("Failed to parse embedding response: {}", e)))?;
 
-        let _ = child.wait();
-
-        if response_line.is_empty() {
-            return Err(AppError::Other("Python embedder returned no output".into()));
-        }
-
-        let response: EmbedResponse = serde_json::from_str(&response_line)
-            .map_err(|e| AppError::Other(format!("Failed to parse Python response: {}", e)))?;
-
-        if response.status == "success" {
-            Ok(response.embeddings.unwrap_or_default())
-        } else {
-            Err(AppError::Other(format!(
-                "Embed error: {} {:?}",
-                response.error.unwrap_or_default(),
-                response.traceback
-            )))
-        }
+        Ok(res.embeddings)
     }
 
-    pub fn transcribe_audio(&self, file_path: &Path, model_size: &str) -> AppResult<crate::media::types::MediaTranscript> {
+    pub fn transcribe_audio(
+        &self,
+        file_path: &Path,
+        model_size: &str,
+    ) -> AppResult<crate::media::types::MediaTranscript> {
         let python_exe = self.ensure_venv()?;
 
         let mut script_path = std::env::current_dir()
@@ -352,8 +320,9 @@ impl PythonManager {
             let target_path = self.app_data_dir.join("transcriber.py");
             if !target_path.exists() {
                 let script_content = include_str!("../../python/transcriber.py");
-                std::fs::write(&target_path, script_content)
-                    .map_err(|e| AppError::Other(format!("Failed to write transcriber.py: {}", e)))?;
+                std::fs::write(&target_path, script_content).map_err(|e| {
+                    AppError::Other(format!("Failed to write transcriber.py: {}", e))
+                })?;
             }
             target_path
         };
@@ -389,21 +358,25 @@ impl PythonManager {
         let json_line = serde_json::to_string(&req).unwrap() + "\n";
 
         if let Some(mut stdin) = child.stdin.take() {
-            stdin.write_all(json_line.as_bytes())
+            stdin
+                .write_all(json_line.as_bytes())
                 .map_err(|e| AppError::Other(format!("Failed to write to python stdin: {}", e)))?;
         }
 
         let mut stdout = child.stdout.take().expect("Failed to open stdout");
         let mut reader = BufReader::new(&mut stdout);
-        
+
         let mut response_line = String::new();
-        reader.read_line(&mut response_line)
+        reader
+            .read_line(&mut response_line)
             .map_err(|e| AppError::Other(format!("Failed to read python stdout: {}", e)))?;
 
         let _ = child.wait();
 
         if response_line.is_empty() {
-            return Err(AppError::Other("Python transcriber returned no output".into()));
+            return Err(AppError::Other(
+                "Python transcriber returned no output".into(),
+            ));
         }
 
         let response: TranscribeResponse = serde_json::from_str(&response_line)
@@ -446,8 +419,9 @@ impl PythonManager {
             let target_path = self.app_data_dir.join("ocr_parser.py");
             if !target_path.exists() {
                 let script_content = include_str!("../../python/ocr_parser.py");
-                std::fs::write(&target_path, script_content)
-                    .map_err(|e| AppError::Other(format!("Failed to write ocr_parser.py: {}", e)))?;
+                std::fs::write(&target_path, script_content).map_err(|e| {
+                    AppError::Other(format!("Failed to write ocr_parser.py: {}", e))
+                })?;
             }
             target_path
         };
@@ -480,21 +454,25 @@ impl PythonManager {
         let json_line = serde_json::to_string(&req).unwrap() + "\n";
 
         if let Some(mut stdin) = child.stdin.take() {
-            stdin.write_all(json_line.as_bytes())
+            stdin
+                .write_all(json_line.as_bytes())
                 .map_err(|e| AppError::Other(format!("Failed to write to python stdin: {}", e)))?;
         }
 
         let mut stdout = child.stdout.take().expect("Failed to open stdout");
         let mut reader = BufReader::new(&mut stdout);
-        
+
         let mut response_line = String::new();
-        reader.read_line(&mut response_line)
+        reader
+            .read_line(&mut response_line)
             .map_err(|e| AppError::Other(format!("Failed to read python stdout: {}", e)))?;
 
         let _ = child.wait();
 
         if response_line.is_empty() {
-            return Err(AppError::Other("Python OCR parser returned no output".into()));
+            return Err(AppError::Other(
+                "Python OCR parser returned no output".into(),
+            ));
         }
 
         let response: OcrResponse = serde_json::from_str(&response_line)
@@ -503,7 +481,7 @@ impl PythonManager {
         if response.status == "success" {
             Ok((
                 response.content.unwrap_or_default(),
-                response.confidence_per_page.unwrap_or_default()
+                response.confidence_per_page.unwrap_or_default(),
             ))
         } else {
             Err(AppError::Other(format!(
@@ -514,4 +492,3 @@ impl PythonManager {
         }
     }
 }
-

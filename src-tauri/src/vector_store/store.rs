@@ -1,167 +1,92 @@
-use std::path::{Path, PathBuf};
-use std::sync::Mutex;
-use std::fs;
-use serde::{Serialize, Deserialize};
-
-use crate::utils::error::{AppError, AppResult};
-
-#[derive(Serialize, Deserialize)]
-struct StoreData {
-    dim: u32,
-    vectors: Vec<VectorItem>,
-    next_id: i64,
-}
-
-#[derive(Serialize, Deserialize)]
-struct VectorItem {
-    id: i64,
-    embedding: Vec<f32>,
-}
+use crate::db::Database;
+use crate::utils::error::AppResult;
+use crate::vector_store::chroma_client::ChromaClient;
+use crate::vector_store::types::{IndexableChunk, SearchFilter};
+use std::path::Path;
+use std::sync::Arc;
 
 pub struct VectorStore {
-    store_path: PathBuf,
-    data: Mutex<StoreData>,
+    chroma_client: ChromaClient,
+    db: Arc<Database>,
 }
 
 impl VectorStore {
-    pub fn new(app_data_dir: &Path, dim: u32) -> AppResult<Self> {
-        let index_dir = app_data_dir.join("data").join("vectors");
-        std::fs::create_dir_all(&index_dir).map_err(|e| AppError::Other(e.to_string()))?;
-        
-        let store_path = index_dir.join("knowledge_base.json");
-        
-        let data = if store_path.exists() {
-            tracing::info!("Loading vector store from {:?}", store_path);
-            let content = fs::read_to_string(&store_path)
-                .map_err(|e| AppError::Other(e.to_string()))?;
-            serde_json::from_str::<StoreData>(&content)
-                .map_err(|e| AppError::Other(e.to_string()))?
-        } else {
-            tracing::info!("Creating new vector store");
-            StoreData {
-                dim,
-                vectors: Vec::new(),
-                next_id: 1,
-            }
-        };
-
-        if data.dim != dim {
-            return Err(AppError::Other(format!(
-                "Dimension mismatch: store has {}, requested {}",
-                data.dim, dim
-            )));
-        }
-
-        Ok(Self {
-            store_path,
-            data: Mutex::new(data),
-        })
+    pub fn new(app_data_dir: &Path, db: Arc<Database>) -> AppResult<Self> {
+        let chroma_client = ChromaClient::new("http://127.0.0.1:8082".to_string());
+        Ok(Self { chroma_client, db })
     }
 
-    pub fn add_vectors(&self, embeddings: Vec<Vec<f32>>) -> AppResult<Vec<i64>> {
-        if embeddings.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let mut data = self.data.lock().unwrap();
-        let mut ids = Vec::with_capacity(embeddings.len());
-        
-        for emb in embeddings {
-            if emb.len() != data.dim as usize {
-                return Err(AppError::Other(format!(
-                    "Invalid vector dimension: expected {}, got {}",
-                    data.dim, emb.len()
-                )));
-            }
-            
-            // L2 normalize vector for cosine similarity to work seamlessly with inner product
-            let norm: f32 = emb.iter().map(|v| v * v).sum::<f32>().sqrt();
-            let normalized = if norm > 0.0 {
-                emb.into_iter().map(|v| v / norm).collect()
-            } else {
-                emb
-            };
-
-            let id = data.next_id;
-            data.next_id += 1;
-            
-            data.vectors.push(VectorItem {
-                id,
-                embedding: normalized,
-            });
-            ids.push(id);
-        }
-
-        // Save after insert
-        let content = serde_json::to_string(&*data)
-            .map_err(|e| AppError::Other(e.to_string()))?;
-        fs::write(&self.store_path, content)
-            .map_err(|e| AppError::Other(e.to_string()))?;
-
-        Ok(ids)
+    pub async fn add_chunks(&self, chunks: Vec<IndexableChunk>) -> AppResult<()> {
+        self.chroma_client.add_batch(chunks).await
     }
 
-    pub fn remove_vectors(&self, ids: &[i64]) -> AppResult<()> {
-        if ids.is_empty() {
-            return Ok(());
-        }
+    pub async fn remove_document(&self, document_id: &str) -> AppResult<()> {
+        self.chroma_client.delete_by_document(document_id).await
+    }
 
-        let mut data = self.data.lock().unwrap();
-        data.vectors.retain(|v| !ids.contains(&v.id));
+    pub async fn clear(&self) -> AppResult<()> {
+        let mut filter1 = std::collections::HashMap::new();
+        filter1.insert(
+            "sourceType".to_string(),
+            serde_json::Value::String("document".to_string()),
+        );
+        let _ = self.chroma_client.delete_by_filter(filter1).await;
 
-        let content = serde_json::to_string(&*data)
-            .map_err(|e| AppError::Other(e.to_string()))?;
-        fs::write(&self.store_path, content)
-            .map_err(|e| AppError::Other(e.to_string()))?;
+        let mut filter2 = std::collections::HashMap::new();
+        filter2.insert(
+            "sourceType".to_string(),
+            serde_json::Value::String("media_transcript".to_string()),
+        );
+        let _ = self.chroma_client.delete_by_filter(filter2).await;
 
         Ok(())
     }
 
-    pub fn clear(&self) -> AppResult<()> {
-        let mut data = self.data.lock().unwrap();
-        data.vectors.clear();
-        data.next_id = 1;
-        let content = serde_json::to_string(&*data)
-            .map_err(|e| AppError::Other(e.to_string()))?;
-        fs::write(&self.store_path, content)
-            .map_err(|e| AppError::Other(e.to_string()))?;
-        Ok(())
-    }
+    pub async fn search(
+        &self,
+        query: &str,
+        query_vector: Vec<f32>,
+        limit: usize,
+        filter: SearchFilter,
+    ) -> AppResult<Vec<(String, f32)>> {
+        // 1. Semantic (dense) search from Chroma
+        let chroma_res = self
+            .chroma_client
+            .query(
+                query_vector,
+                limit * 2, // fetch slightly more for fusion
+                filter.document_id.as_deref(),
+                filter.source_type.as_deref(),
+            )
+            .await?;
 
-    pub fn search(&self, query: &[f32], top_k: usize) -> AppResult<Vec<(i64, f32)>> {
-        let data = self.data.lock().unwrap();
-        
-        if query.len() != data.dim as usize {
-            return Err(AppError::Other(format!("Invalid query dimension")));
+        let mut dense_results = Vec::new();
+        for (id, dist) in chroma_res
+            .ids
+            .into_iter()
+            .zip(chroma_res.distances.into_iter())
+        {
+            dense_results.push((id, dist));
         }
 
-        if data.vectors.is_empty() {
-            return Ok(vec![]);
-        }
+        // 2. Keyword (sparse) search from SQLite FTS5
+        let sparse_results = self.db.with_connection(|conn| {
+            crate::vector_store::fts_search::search_bm25(conn, query, &filter, limit * 2)
+        })?;
 
-        // Normalize query
-        let norm: f32 = query.iter().map(|v| v * v).sum::<f32>().sqrt();
-        let q_norm = if norm > 0.0 {
-            query.iter().map(|v| v / norm).collect::<Vec<_>>()
-        } else {
-            query.to_vec()
-        };
+        // 3. Reciprocal Rank Fusion (RRF)
+        let fused = crate::vector_store::fusion::reciprocal_rank_fusion(
+            dense_results,
+            sparse_results,
+            60.0,
+        );
 
-        let mut scored_vectors: Vec<(i64, f32)> = data.vectors.iter().map(|item| {
-            let similarity: f32 = item.embedding.iter()
-                .zip(q_norm.iter())
-                .map(|(a, b)| a * b)
-                .sum();
-            
-            // Distance is roughly 1.0 - similarity (since L2 normalized inner product gives cosine similarity)
-            let distance = 1.0 - similarity;
-            (item.id, distance)
-        }).collect();
+        let mut hits: Vec<(String, f32)> = fused
+            .into_iter()
+            .map(|c| (c.chunk_id, c.fused_score))
+            .collect();
 
-        // Sort by distance ascending
-        scored_vectors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
-        
-        scored_vectors.truncate(top_k);
-        Ok(scored_vectors)
+        hits.truncate(limit);
+        Ok(hits)
     }
 }

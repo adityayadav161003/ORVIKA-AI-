@@ -5,6 +5,8 @@ use serde::Serialize;
 use tauri::ipc::Channel;
 use tauri::State;
 
+use crate::db::chunk_repo::{self, DocumentChunk};
+use crate::db::document_repo;
 use crate::db::message_repo::{self, Message, NewMessage};
 use crate::db::session_repo::{self, Session};
 use crate::db::settings_repo;
@@ -13,10 +15,8 @@ use crate::llm::inference;
 use crate::llm::types::{ChatMessage, StreamChatRequest};
 use crate::llm::LlmRuntime;
 use crate::python::manager::PythonManager;
-use crate::vector_store::VectorStore;
-use crate::db::chunk_repo::{self, DocumentChunk};
-use crate::db::document_repo;
 use crate::utils::error::AppError;
+use crate::vector_store::VectorStore;
 
 const DEFAULT_SYSTEM_PROMPT: &str = include_str!("../../../models/prompts/chat.system.txt");
 
@@ -78,7 +78,9 @@ pub fn update_session_system_prompt(
     prompt: Option<String>,
 ) -> Result<(), String> {
     database
-        .with_connection(|conn| session_repo::update_system_prompt(conn, &session_id, prompt.as_deref()))
+        .with_connection(|conn| {
+            session_repo::update_system_prompt(conn, &session_id, prompt.as_deref())
+        })
         .map_err(|err| err.to_string())
 }
 
@@ -165,14 +167,23 @@ pub async fn send_message(
     // Trigger RAG search
     if let Ok(embeddings) = python_manager.embed_chunks(vec![content.clone()]) {
         if let Some(query_emb) = embeddings.into_iter().next() {
-            if let Ok(hits) = vector_store.search(&query_emb, 5) {
-                let embedding_ids: Vec<i64> = hits.into_iter().map(|(id, _)| id).collect();
-                if !embedding_ids.is_empty() {
+            let filter = crate::vector_store::types::SearchFilter {
+                document_id: None,
+                source_type: Some("document".to_string()),
+                min_page: None,
+                max_page: None,
+            };
+            if let Ok(hits) = vector_store.search(&content, query_emb, 5, filter).await {
+                let chunk_ids: Vec<String> = hits.into_iter().map(|(id, _)| id).collect();
+                if !chunk_ids.is_empty() {
                     let _ = database.with_connection(|conn| {
-                        if let Ok(chunks) = chunk_repo::get_chunks_by_embedding_ids(conn, &embedding_ids) {
+                        if let Ok(chunks) = chunk_repo::get_chunks_by_ids(conn, &chunk_ids) {
                             for chunk in chunks {
-                                if let Ok(Some(doc)) = document_repo::get(conn, &chunk.document_id) {
-                                    if doc.session_id.is_none() || doc.session_id.as_deref() == Some(&session_id) {
+                                if let Ok(Some(doc)) = document_repo::get(conn, &chunk.document_id)
+                                {
+                                    if doc.session_id.is_none()
+                                        || doc.session_id.as_deref() == Some(&session_id)
+                                    {
                                         rag_chunks.push(chunk);
                                         source_names.insert(doc.filename);
                                     }
@@ -193,7 +204,10 @@ pub async fn send_message(
     let sources_json = if source_names.is_empty() {
         None
     } else {
-        Some(serde_json::to_string(&source_names.into_iter().collect::<Vec<_>>()).unwrap_or_default())
+        Some(
+            serde_json::to_string(&source_names.into_iter().collect::<Vec<_>>())
+                .unwrap_or_default(),
+        )
     };
 
     let assistant_message_db = database
@@ -216,7 +230,7 @@ pub async fn send_message(
 
     let started = Instant::now();
     let mut chunk_count = 0;
-    
+
     let assistant_content = inference::stream_chat_completion(
         runtime.http_client(),
         &runtime.base_url(),
@@ -247,11 +261,11 @@ pub async fn send_message(
         .with_connection(|conn| {
             message_repo::update_content(conn, &assistant_message_db.id, &assistant_content)?;
             message_repo::update_metadata(
-                conn, 
-                &assistant_message_db.id, 
-                Some(tokens_used), 
-                Some(latency_ms), 
-                None
+                conn,
+                &assistant_message_db.id,
+                Some(tokens_used),
+                Some(latency_ms),
+                None,
             )?;
             session_repo::touch(conn, &session_id)?;
             message_repo::get(conn, &assistant_message_db.id)
@@ -296,7 +310,7 @@ fn build_context_messages(
     let mut accumulated_tokens = (system_prompt.chars().count() / 4) as u32;
 
     let mut context = Vec::new();
-    
+
     // Iterate from newest to oldest
     for message in recent.iter().rev() {
         if !matches!(message.role.as_str(), "user" | "assistant" | "system") {
@@ -383,45 +397,54 @@ mod tests {
         let db_path = dir.path().join("test.db");
         let db = Database::open(&db_path).unwrap();
         db.run_migrations().unwrap();
-        
-        let session_id = db.with_connection(|conn| {
-            let session = crate::db::session_repo::create(
-                conn, 
-                "Test Session",
-                "test-model",
-            ).unwrap();
-            Ok::<String, AppError>(session.id)
-        }).unwrap();
+
+        let session_id = db
+            .with_connection(|conn| {
+                let session =
+                    crate::db::session_repo::create(conn, "Test Session", "test-model").unwrap();
+                Ok::<String, AppError>(session.id)
+            })
+            .unwrap();
 
         db.with_connection(|conn| {
-            let user_msg = crate::db::message_repo::create(conn, crate::db::message_repo::NewMessage {
-                session_id: &session_id,
-                role: "user",
-                content: "Hello",
-                source_type: None,
-                sources: None,
-                tokens_used: None,
-                latency_ms: None,
-                metadata: None,
-            }).unwrap();
+            let user_msg = crate::db::message_repo::create(
+                conn,
+                crate::db::message_repo::NewMessage {
+                    session_id: &session_id,
+                    role: "user",
+                    content: "Hello",
+                    source_type: None,
+                    sources: None,
+                    tokens_used: None,
+                    latency_ms: None,
+                    metadata: None,
+                },
+            )
+            .unwrap();
 
-            let assistant_msg = crate::db::message_repo::create(conn, crate::db::message_repo::NewMessage {
-                session_id: &session_id,
-                role: "assistant",
-                content: "Hi there!",
-                source_type: Some("local"),
-                sources: None,
-                tokens_used: Some(10),
-                latency_ms: Some(100),
-                metadata: None,
-            }).unwrap();
+            let assistant_msg = crate::db::message_repo::create(
+                conn,
+                crate::db::message_repo::NewMessage {
+                    session_id: &session_id,
+                    role: "assistant",
+                    content: "Hi there!",
+                    source_type: Some("local"),
+                    sources: None,
+                    tokens_used: Some(10),
+                    latency_ms: Some(100),
+                    metadata: None,
+                },
+            )
+            .unwrap();
 
             assert_eq!(user_msg.content, "Hello");
             assert_eq!(assistant_msg.content, "Hi there!");
 
-            let messages = crate::db::message_repo::list_for_session(conn, &session_id, None, None).unwrap();
+            let messages =
+                crate::db::message_repo::list_for_session(conn, &session_id, None, None).unwrap();
             assert_eq!(messages.len(), 2);
             Ok::<(), AppError>(())
-        }).unwrap();
+        })
+        .unwrap();
     }
 }

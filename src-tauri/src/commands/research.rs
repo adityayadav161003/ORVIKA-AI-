@@ -1,27 +1,27 @@
-use std::sync::Arc;
-use tauri::{AppHandle, State, Emitter};
-use tauri::ipc::Channel;
-use uuid::Uuid;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use tauri::ipc::Channel;
+use tauri::{AppHandle, Emitter, State};
+use uuid::Uuid;
 
-use crate::db::Database;
+use crate::cloud::traits::CloudProvider;
+use crate::db::api_key_repo;
+use crate::db::chunk_repo;
+use crate::db::document_repo;
+use crate::db::message_repo::{self, Message, NewMessage};
 use crate::db::research_repo::{
     self, NewResearchQuery, NewResearchSession, ResearchQuery, ResearchSession,
 };
-use crate::db::message_repo::{self, NewMessage, Message};
 use crate::db::session_repo;
-use crate::db::chunk_repo;
-use crate::db::document_repo;
-use crate::db::api_key_repo;
 use crate::db::settings_repo;
-use crate::llm::LlmRuntime;
-use crate::llm::types::{ChatMessage, StreamChatRequest};
+use crate::db::Database;
 use crate::llm::inference;
+use crate::llm::types::{ChatMessage, StreamChatRequest};
+use crate::llm::LlmRuntime;
+use crate::python::manager::PythonManager;
 use crate::security::pii_detector;
 use crate::security::Aes256GcmCipher;
-use crate::python::manager::PythonManager;
 use crate::vector_store::VectorStore;
-use crate::cloud::traits::CloudProvider;
 
 #[derive(Debug, Deserialize)]
 pub struct ResearchPlanResponse {
@@ -64,10 +64,11 @@ pub async fn generate_research_plan(
         latency_ms: Some(0),
         metadata: None,
     };
-    
-    let msg = database.with_connection(|conn| message_repo::create(conn, new_msg))
+
+    let msg = database
+        .with_connection(|conn| message_repo::create(conn, new_msg))
         .map_err(|e| e.to_string())?;
-    
+
     let msg_id = msg.id;
 
     // Step 2: Build LLM Prompt
@@ -107,7 +108,7 @@ The JSON must follow this exact schema:
         ChatMessage {
             role: "user".to_string(),
             content: user_prompt,
-        }
+        },
     ];
 
     // Step 3: Ask LLM for JSON
@@ -117,7 +118,9 @@ The JSON must follow this exact schema:
         messages,
         2048,
         0.1,
-    ).await.map_err(|err| err.to_string())?;
+    )
+    .await
+    .map_err(|err| err.to_string())?;
 
     // Step 4: Parse JSON
     // Clean up potential markdown blocks if the LLM didn't listen
@@ -130,7 +133,11 @@ The JSON must follow this exact schema:
     let plan: ResearchPlanResponse = match serde_json::from_str(&cleaned) {
         Ok(p) => p,
         Err(e) => {
-            tracing::error!("Failed to parse JSON research plan: {}\nResponse was: {}", e, full_response);
+            tracing::error!(
+                "Failed to parse JSON research plan: {}\nResponse was: {}",
+                e,
+                full_response
+            );
             return Err(format!("Failed to parse JSON plan from LLM: {}", e));
         }
     };
@@ -141,14 +148,14 @@ The JSON must follow this exact schema:
     let mut new_queries = Vec::new();
     let mut query_ids = Vec::new();
     let mut highest_risk = "low";
-    
+
     for (idx, q) in plan.queries.iter().enumerate() {
         let q_id = Uuid::new_v4().to_string();
         query_ids.push(q_id.clone());
-        
+
         // Pass the query through our heuristics scanner
         let pii_result = pii_detector::sanitize_query(&q.query);
-        
+
         if pii_result.redact_count > 0 {
             let _ = database.with_connection(|conn| {
                 crate::services::audit::log_pii_redacted(
@@ -156,7 +163,7 @@ The JSON must follow this exact schema:
                     Some(&session_id),
                     &q.query,
                     &pii_result.sanitized_text,
-                    &pii_result.risk_level
+                    &pii_result.risk_level,
                 )
             });
         }
@@ -167,7 +174,7 @@ The JSON must follow this exact schema:
             ("medium", _) | (_, "medium") => "medium",
             _ => "low",
         };
-        
+
         new_queries.push(NewResearchQuery {
             id: q_id,
             research_session_id: research_session_id.clone(),
@@ -181,9 +188,10 @@ The JSON must follow this exact schema:
     }
 
     // Auto-approve threshold logic
-    let threshold = database.with_connection(|conn| {
-        settings_repo::get(conn, "security.auto_approve_threshold")
-    }).map_err(|e| e.to_string())?.unwrap_or_else(|| "never".to_string());
+    let threshold = database
+        .with_connection(|conn| settings_repo::get(conn, "security.auto_approve_threshold"))
+        .map_err(|e| e.to_string())?
+        .unwrap_or_else(|| "never".to_string());
 
     let auto_approve = match threshold.as_str() {
         "low" => highest_risk == "low",
@@ -209,13 +217,16 @@ The JSON must follow this exact schema:
         knowledge_gaps: plan.knowledge_gaps.as_deref(),
     };
 
-    let rs = database.with_connection(|conn| research_repo::create_session(conn, new_rs))
+    let rs = database
+        .with_connection(|conn| research_repo::create_session(conn, new_rs))
         .map_err(|e| e.to_string())?;
 
-    database.with_connection(|conn| research_repo::create_queries(conn, &new_queries))
+    database
+        .with_connection(|conn| research_repo::create_queries(conn, &new_queries))
         .map_err(|e| e.to_string())?;
 
-    let saved_queries = database.with_connection(|conn| research_repo::list_queries(conn, &research_session_id))
+    let saved_queries = database
+        .with_connection(|conn| research_repo::list_queries(conn, &research_session_id))
         .map_err(|e| e.to_string())?;
 
     Ok(ResearchPlanResult {
@@ -230,18 +241,20 @@ pub async fn approve_research_plan(
     research_session_id: String,
     approved_query_ids: Vec<String>,
 ) -> Result<(), String> {
-    database.with_connection(|conn| {
-        research_repo::update_session_status(conn, &research_session_id, "approved")?;
-        
-        let all_queries = research_repo::list_queries(conn, &research_session_id)?;
-        for q in all_queries {
-            let is_approved = approved_query_ids.contains(&q.id);
-            let status = if is_approved { "approved" } else { "rejected" };
-            research_repo::update_query_status(conn, &q.id, status, Some(is_approved))?;
-        }
-        
-        Ok::<(), crate::utils::error::AppError>(())
-    }).map_err(|e| e.to_string())
+    database
+        .with_connection(|conn| {
+            research_repo::update_session_status(conn, &research_session_id, "approved")?;
+
+            let all_queries = research_repo::list_queries(conn, &research_session_id)?;
+            for q in all_queries {
+                let is_approved = approved_query_ids.contains(&q.id);
+                let status = if is_approved { "approved" } else { "rejected" };
+                research_repo::update_query_status(conn, &q.id, status, Some(is_approved))?;
+            }
+
+            Ok::<(), crate::utils::error::AppError>(())
+        })
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -256,44 +269,56 @@ pub async fn execute_research(
     on_token: Channel<String>,
 ) -> Result<String, String> {
     // 1. Get research session
-    let rs = database.with_connection(|conn| {
-        research_repo::get_session(conn, &research_session_id)
-    }).map_err(|e| e.to_string())?.ok_or("Research session not found")?;
+    let rs = database
+        .with_connection(|conn| research_repo::get_session(conn, &research_session_id))
+        .map_err(|e| e.to_string())?
+        .ok_or("Research session not found")?;
 
     // 2. Get general session and cloud provider
-    let session = database.with_connection(|conn| {
-        session_repo::get(conn, &rs.session_id)
-    }).map_err(|e| e.to_string())?.ok_or("General chat session not found")?;
+    let session = database
+        .with_connection(|conn| session_repo::get(conn, &rs.session_id))
+        .map_err(|e| e.to_string())?
+        .ok_or("General chat session not found")?;
 
-    let default_provider = database.with_connection(|conn| {
-        crate::db::settings_repo::get(conn, "default_cloud_provider")
-    }).map_err(|e| e.to_string())?.unwrap_or_else(|| "openai".to_string());
+    let default_provider = database
+        .with_connection(|conn| crate::db::settings_repo::get(conn, "default_cloud_provider"))
+        .map_err(|e| e.to_string())?
+        .unwrap_or_else(|| "openai".to_string());
 
     let provider_name = session.cloud_provider.clone().unwrap_or(default_provider);
 
     // 3. Fetch API Key
-    let api_key = database.with_connection(|conn| {
-        api_key_repo::get_key(conn, &cipher, &provider_name)
-    }).map_err(|e| e.to_string())?.ok_or(format!("API key for cloud provider '{}' is not set. Please go to Settings to add it.", provider_name))?;
+    let api_key = database
+        .with_connection(|conn| api_key_repo::get_key(conn, &cipher, &provider_name))
+        .map_err(|e| e.to_string())?
+        .ok_or(format!(
+            "API key for cloud provider '{}' is not set. Please go to Settings to add it.",
+            provider_name
+        ))?;
 
     // 4. List all approved queries for this research session
-    let queries = database.with_connection(|conn| {
-        research_repo::list_queries(conn, &research_session_id)
-    }).map_err(|e| e.to_string())?;
+    let queries = database
+        .with_connection(|conn| research_repo::list_queries(conn, &research_session_id))
+        .map_err(|e| e.to_string())?;
 
-    let approved_queries: Vec<_> = queries.into_iter().filter(|q| q.status == "approved").collect();
+    let approved_queries: Vec<_> = queries
+        .into_iter()
+        .filter(|q| q.status == "approved")
+        .collect();
     if approved_queries.is_empty() {
         return Err("No approved queries to execute".to_string());
     }
 
     // Check API monthly spending limit
-    let limit_str = database.with_connection(|conn| {
-        settings_repo::get(conn, "security.api_spending_limit")
-    }).map_err(|e| e.to_string())?.unwrap_or_else(|| "50.0".to_string());
+    let limit_str = database
+        .with_connection(|conn| settings_repo::get(conn, "security.api_spending_limit"))
+        .map_err(|e| e.to_string())?
+        .unwrap_or_else(|| "50.0".to_string());
 
-    let current_str = database.with_connection(|conn| {
-        settings_repo::get(conn, "security.api_spending_current")
-    }).map_err(|e| e.to_string())?.unwrap_or_else(|| "0.0".to_string());
+    let current_str = database
+        .with_connection(|conn| settings_repo::get(conn, "security.api_spending_current"))
+        .map_err(|e| e.to_string())?
+        .unwrap_or_else(|| "0.0".to_string());
 
     let limit = limit_str.parse::<f64>().unwrap_or(50.0);
     let current = current_str.parse::<f64>().unwrap_or(0.0);
@@ -306,16 +331,18 @@ pub async fn execute_research(
                 Some(&rs.session_id),
                 &provider_name,
                 "blocked_request_spending_limit",
-                &msg
+                &msg,
             )
         });
         return Err(msg);
     }
 
     // Update status to in_progress
-    database.with_connection(|conn| {
-        research_repo::update_session_status(conn, &research_session_id, "in_progress")
-    }).map_err(|e| e.to_string())?;
+    database
+        .with_connection(|conn| {
+            research_repo::update_session_status(conn, &research_session_id, "in_progress")
+        })
+        .map_err(|e| e.to_string())?;
 
     // 5. Execute each query
     for (idx, q) in approved_queries.iter().enumerate() {
@@ -324,31 +351,41 @@ pub async fn execute_research(
         }));
 
         // Update status of query to sent
-        database.with_connection(|conn| {
-            research_repo::update_query_status(conn, &q.id, "sent", None)
-        }).map_err(|e| e.to_string())?;
+        database
+            .with_connection(|conn| research_repo::update_query_status(conn, &q.id, "sent", None))
+            .map_err(|e| e.to_string())?;
 
         // Check cache
-        let cached = database.with_connection(|conn| {
-            Ok(crate::cloud::cache::get_cached_response(conn, &q.sanitized_query))
-        }).ok().flatten();
+        let cached = database
+            .with_connection(|conn| {
+                Ok(crate::cloud::cache::get_cached_response(
+                    conn,
+                    &q.sanitized_query,
+                ))
+            })
+            .ok()
+            .flatten();
 
         let response_text = if let Some(cached_resp) = cached {
-
-            let _ = app.emit("research-status-update", serde_json::json!({
-                "status": format!("💡 Found cached response for '{}'...", q.topic)
-            }));
+            let _ = app.emit(
+                "research-status-update",
+                serde_json::json!({
+                    "status": format!("💡 Found cached response for '{}'...", q.topic)
+                }),
+            );
             cached_resp
         } else {
             // Validate outbound payload for unredacted PII in dev mode
-            if let Err(err) = crate::security::network_monitor::validate_outbound_payload(&q.sanitized_query) {
+            if let Err(err) =
+                crate::security::network_monitor::validate_outbound_payload(&q.sanitized_query)
+            {
                 let _ = database.with_connection(|conn| {
                     crate::services::audit::log_blocked_call(
                         conn,
                         Some(&rs.session_id),
                         &provider_name,
                         &q.sanitized_query,
-                        &format!("Blocked by Network Monitor: {}", err)
+                        &format!("Blocked by Network Monitor: {}", err),
                     )
                 });
                 return Err(err.to_string());
@@ -356,11 +393,24 @@ pub async fn execute_research(
 
             // Execute cloud provider call
             let res = match provider_name.as_str() {
-                "openai" => crate::cloud::openai::OpenAiProvider.execute_query(&q.sanitized_query, &api_key).await,
-                "gemini" => crate::cloud::gemini::GeminiProvider.execute_query(&q.sanitized_query, &api_key).await,
-                "anthropic" => crate::cloud::claude::ClaudeProvider.execute_query(&q.sanitized_query, &api_key).await,
+                "openai" => {
+                    crate::cloud::openai::OpenAiProvider
+                        .execute_query(&q.sanitized_query, &api_key)
+                        .await
+                }
+                "gemini" => {
+                    crate::cloud::gemini::GeminiProvider
+                        .execute_query(&q.sanitized_query, &api_key)
+                        .await
+                }
+                "anthropic" => {
+                    crate::cloud::claude::ClaudeProvider
+                        .execute_query(&q.sanitized_query, &api_key)
+                        .await
+                }
                 _ => return Err(format!("Unsupported cloud provider: {}", provider_name)),
-            }.map_err(|e| e.to_string())?;
+            }
+            .map_err(|e| e.to_string())?;
 
             // Log successful outbound cloud call
             let _ = database.with_connection(|conn| {
@@ -371,7 +421,7 @@ pub async fn execute_research(
                     q.raw_query.as_deref().unwrap_or(&q.sanitized_query),
                     &q.sanitized_query,
                     &res,
-                    &q.risk_level
+                    &q.risk_level,
                 )
             });
 
@@ -386,42 +436,57 @@ pub async fn execute_research(
             _ => 0.005,
         };
 
-        database.with_connection(|conn| {
-            research_repo::update_query_response(conn, &q.id, &response_text, "completed")?;
-            research_repo::increment_completed_queries(conn, &research_session_id)?;
-            
-            // Increment spending current
-            let current_spent_str = settings_repo::get(conn, "security.api_spending_current")?
-                .unwrap_or_else(|| "0.0".to_string());
-            let current_spent = current_spent_str.parse::<f64>().unwrap_or(0.0);
-            let new_spent = current_spent + provider_cost;
-            settings_repo::set(conn, "security.api_spending_current", &new_spent.to_string())?;
+        database
+            .with_connection(|conn| {
+                research_repo::update_query_response(conn, &q.id, &response_text, "completed")?;
+                research_repo::increment_completed_queries(conn, &research_session_id)?;
 
-            Ok::<(), crate::utils::error::AppError>(())
-        }).map_err(|e| e.to_string())?;
+                // Increment spending current
+                let current_spent_str = settings_repo::get(conn, "security.api_spending_current")?
+                    .unwrap_or_else(|| "0.0".to_string());
+                let current_spent = current_spent_str.parse::<f64>().unwrap_or(0.0);
+                let new_spent = current_spent + provider_cost;
+                settings_repo::set(
+                    conn,
+                    "security.api_spending_current",
+                    &new_spent.to_string(),
+                )?;
+
+                Ok::<(), crate::utils::error::AppError>(())
+            })
+            .map_err(|e| e.to_string())?;
     }
 
     // Mark session as completed
-    database.with_connection(|conn| {
-        research_repo::update_session_status(conn, &research_session_id, "completed")
-    }).map_err(|e| e.to_string())?;
+    database
+        .with_connection(|conn| {
+            research_repo::update_session_status(conn, &research_session_id, "completed")
+        })
+        .map_err(|e| e.to_string())?;
 
     // 6. Compile responses
     let mut compilation = String::new();
     for q in &approved_queries {
-        let updated_q = database.with_connection(|conn| {
-            research_repo::list_queries(conn, &research_session_id)
-        }).map_err(|e| e.to_string())?.into_iter().find(|x| x.id == q.id).unwrap();
+        let updated_q = database
+            .with_connection(|conn| research_repo::list_queries(conn, &research_session_id))
+            .map_err(|e| e.to_string())?
+            .into_iter()
+            .find(|x| x.id == q.id)
+            .unwrap();
 
         compilation.push_str(&format!("### Research Topic: {}\n", updated_q.topic));
         compilation.push_str(&format!("Query: {}\n", updated_q.sanitized_query));
-        compilation.push_str(&format!("Findings:\n{}\n\n", updated_q.response.unwrap_or_default()));
+        compilation.push_str(&format!(
+            "Findings:\n{}\n\n",
+            updated_q.response.unwrap_or_default()
+        ));
     }
 
     // 7. Get original user message and query vector store for context if documents are linked
-    let user_msg = database.with_connection(|conn| {
-        message_repo::get(conn, &rs.message_id)
-    }).map_err(|e| e.to_string())?.ok_or("User query message not found")?;
+    let user_msg = database
+        .with_connection(|conn| message_repo::get(conn, &rs.message_id))
+        .map_err(|e| e.to_string())?
+        .ok_or("User query message not found")?;
 
     let mut rag_context_text = String::new();
     let mut source_names = std::collections::HashSet::new();
@@ -429,15 +494,25 @@ pub async fn execute_research(
     // Trigger RAG search
     if let Ok(embeddings) = python_manager.embed_chunks(vec![user_msg.content.clone()]) {
         if let Some(query_emb) = embeddings.into_iter().next() {
-            if let Ok(hits) = vector_store.search(&query_emb, 5) {
-                let embedding_ids: Vec<i64> = hits.into_iter().map(|(id, _)| id).collect();
-                if !embedding_ids.is_empty() {
+            let filter = crate::vector_store::types::SearchFilter {
+                document_id: None,
+                source_type: Some("document".to_string()),
+                min_page: None,
+                max_page: None,
+            };
+            if let Ok(hits) = vector_store
+                .search(&user_msg.content, query_emb, 5, filter)
+                .await
+            {
+                let chunk_ids: Vec<String> = hits.into_iter().map(|(id, _)| id).collect();
+                if !chunk_ids.is_empty() {
                     let _ = database.with_connection(|conn| {
-                        if let Ok(chunks) = chunk_repo::get_chunks_by_embedding_ids(conn, &embedding_ids) {
+                        if let Ok(chunks) = chunk_repo::get_chunks_by_ids(conn, &chunk_ids) {
                             for chunk in chunks {
                                 rag_context_text.push_str(&chunk.content);
                                 rag_context_text.push_str("\n\n");
-                                if let Ok(Some(doc)) = document_repo::get(conn, &chunk.document_id) {
+                                if let Ok(Some(doc)) = document_repo::get(conn, &chunk.document_id)
+                                {
                                     source_names.insert(doc.filename);
                                 }
                             }
@@ -449,9 +524,12 @@ pub async fn execute_research(
         }
     }
 
-    let _ = app.emit("research-status-update", serde_json::json!({
-        "status": "✍ Synthesizing findings with local context..."
-    }));
+    let _ = app.emit(
+        "research-status-update",
+        serde_json::json!({
+            "status": "✍ Synthesizing findings with local context..."
+        }),
+    );
 
     // 8. Call local LLM streaming inference
     runtime.ensure_running().map_err(|err| err.to_string())?;
@@ -476,31 +554,36 @@ Keep private data private. Quote citations accurately."#;
         ChatMessage {
             role: "user".to_string(),
             content: user_prompt,
-        }
+        },
     ];
 
     let sources_json = if source_names.is_empty() {
         None
     } else {
-        Some(serde_json::to_string(&source_names.into_iter().collect::<Vec<_>>()).unwrap_or_default())
+        Some(
+            serde_json::to_string(&source_names.into_iter().collect::<Vec<_>>())
+                .unwrap_or_default(),
+        )
     };
 
     // Create assistant message in SQLite
-    let assistant_message_db = database.with_connection(|conn| {
-        message_repo::create(
-            conn,
-            NewMessage {
-                session_id: &rs.session_id,
-                role: "assistant",
-                content: "",
-                source_type: Some("mixed"),
-                sources: sources_json.as_deref(),
-                tokens_used: None,
-                latency_ms: None,
-                metadata: None,
-            },
-        )
-    }).map_err(|e| e.to_string())?;
+    let assistant_message_db = database
+        .with_connection(|conn| {
+            message_repo::create(
+                conn,
+                NewMessage {
+                    session_id: &rs.session_id,
+                    role: "assistant",
+                    content: "",
+                    source_type: Some("mixed"),
+                    sources: sources_json.as_deref(),
+                    tokens_used: None,
+                    latency_ms: None,
+                    metadata: None,
+                },
+            )
+        })
+        .map_err(|e| e.to_string())?;
 
     let started = std::time::Instant::now();
     let mut chunk_count = 0;
@@ -523,24 +606,28 @@ Keep private data private. Quote citations accurately."#;
             }
         }),
         Some(&runtime.cancel_inference),
-    ).await.map_err(|e| e.to_string())?;
+    )
+    .await
+    .map_err(|e| e.to_string())?;
 
     let latency_ms = started.elapsed().as_millis() as u64;
     let tokens_used = assistant_content.split_whitespace().count() as u32;
 
     // Save final content and touch session
-    database.with_connection(|conn| {
-        message_repo::update_content(conn, &assistant_message_db.id, &assistant_content)?;
-        message_repo::update_metadata(
-            conn, 
-            &assistant_message_db.id, 
-            Some(tokens_used), 
-            Some(latency_ms), 
-            None
-        )?;
-        session_repo::touch(conn, &rs.session_id)?;
-        Ok::<(), crate::utils::error::AppError>(())
-    }).map_err(|e| e.to_string())?;
+    database
+        .with_connection(|conn| {
+            message_repo::update_content(conn, &assistant_message_db.id, &assistant_content)?;
+            message_repo::update_metadata(
+                conn,
+                &assistant_message_db.id,
+                Some(tokens_used),
+                Some(latency_ms),
+                None,
+            )?;
+            session_repo::touch(conn, &rs.session_id)?;
+            Ok::<(), crate::utils::error::AppError>(())
+        })
+        .map_err(|e| e.to_string())?;
 
     Ok(assistant_content)
 }
@@ -549,7 +636,8 @@ Keep private data private. Quote citations accurately."#;
 pub async fn list_research_sessions(
     database: State<'_, Arc<Database>>,
 ) -> Result<Vec<ResearchSession>, String> {
-    database.with_connection(research_repo::list_all_sessions)
+    database
+        .with_connection(research_repo::list_all_sessions)
         .map_err(|e| e.to_string())
 }
 
@@ -558,13 +646,14 @@ pub async fn get_research_session_details(
     database: State<'_, Arc<Database>>,
     research_session_id: String,
 ) -> Result<ResearchPlanResult, String> {
-    let session = database.with_connection(|conn| {
-        research_repo::get_session(conn, &research_session_id)
-    }).map_err(|e| e.to_string())?.ok_or("Research session not found")?;
+    let session = database
+        .with_connection(|conn| research_repo::get_session(conn, &research_session_id))
+        .map_err(|e| e.to_string())?
+        .ok_or("Research session not found")?;
 
-    let queries = database.with_connection(|conn| {
-        research_repo::list_queries(conn, &research_session_id)
-    }).map_err(|e| e.to_string())?;
+    let queries = database
+        .with_connection(|conn| research_repo::list_queries(conn, &research_session_id))
+        .map_err(|e| e.to_string())?;
 
     Ok(ResearchPlanResult { session, queries })
 }
@@ -574,6 +663,7 @@ pub async fn delete_research_session(
     database: State<'_, Arc<Database>>,
     research_session_id: String,
 ) -> Result<(), String> {
-    database.with_connection(|conn| research_repo::delete_session(conn, &research_session_id))
+    database
+        .with_connection(|conn| research_repo::delete_session(conn, &research_session_id))
         .map_err(|e| e.to_string())
 }

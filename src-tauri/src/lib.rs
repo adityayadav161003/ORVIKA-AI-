@@ -28,9 +28,9 @@ use db::Database;
 use llm::model_manager::ModelDownloadState;
 use llm::LlmRuntime;
 use python::manager::PythonManager;
-use vector_store::VectorStore;
 use security::Aes256GcmCipher;
 use utils::logger;
+use vector_store::VectorStore;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -60,13 +60,21 @@ pub fn run() {
             let cipher = Arc::new(Aes256GcmCipher::from_machine_key());
             let python_manager = Arc::new(PythonManager::new(app_data_dir.clone()));
 
-            let vector_store = Arc::new(VectorStore::new(&app_data_dir, 384)?);
+            let embedding_engine = Arc::new(crate::embedding::EmbeddingEngine::new(
+                app_data_dir.clone(),
+                database.clone(),
+                python_manager.clone(),
+            ));
+            embedding_engine.start()?;
+
+            let vector_store = Arc::new(VectorStore::new(&app_data_dir, database.clone())?);
 
             app.manage(database);
             app.manage(runtime);
             app.manage(Arc::new(ModelDownloadState::new()));
             app.manage(cipher);
             app.manage(python_manager);
+            app.manage(embedding_engine);
             app.manage(vector_store);
             Ok(())
         })

@@ -1,10 +1,10 @@
+use serde_json::json;
 use std::sync::Arc;
 use tauri::State;
-use serde_json::json;
 
-use crate::db::Database;
 use crate::db::audit_repo::{self, AuditLogEntry};
 use crate::db::settings_repo;
+use crate::db::Database;
 
 #[tauri::command]
 pub fn list_audit_logs(
@@ -44,9 +44,7 @@ pub fn get_audit_stats(database: State<'_, Arc<Database>>) -> Result<serde_json:
 #[tauri::command]
 pub fn reset_api_spending(database: State<'_, Arc<Database>>) -> Result<(), String> {
     database
-        .with_connection(|conn| {
-            settings_repo::set(conn, "security.api_spending_current", "0.0")
-        })
+        .with_connection(|conn| settings_repo::set(conn, "security.api_spending_current", "0.0"))
         .map_err(|e| e.to_string())
 }
 
@@ -59,13 +57,7 @@ pub fn generate_compliance_report(
 ) -> Result<serde_json::Value, String> {
     let logs = database
         .with_connection(|conn| {
-            audit_repo::list_events(
-                conn,
-                None,
-                None,
-                start_date.as_deref(),
-                end_date.as_deref(),
-            )
+            audit_repo::list_events(conn, None, None, start_date.as_deref(), end_date.as_deref())
         })
         .map_err(|e| e.to_string())?;
 
@@ -74,16 +66,12 @@ pub fn generate_compliance_report(
         .map_err(|e| e.to_string())?;
 
     let spending_limit = database
-        .with_connection(|conn| {
-            settings_repo::get(conn, "security.api_spending_limit")
-        })
+        .with_connection(|conn| settings_repo::get(conn, "security.api_spending_limit"))
         .map_err(|e| e.to_string())?
         .unwrap_or_else(|| "50.0".to_string());
 
     let spending_current = database
-        .with_connection(|conn| {
-            settings_repo::get(conn, "security.api_spending_current")
-        })
+        .with_connection(|conn| settings_repo::get(conn, "security.api_spending_current"))
         .map_err(|e| e.to_string())?
         .unwrap_or_else(|| "0.0".to_string());
 
@@ -170,32 +158,42 @@ pub fn generate_compliance_report(
             })
         }
         _ => {
-            let custom_tpl = database.with_connection(|conn| {
-                let mut stmt = conn.prepare(
-                    "SELECT id, name, description, checkpoints FROM compliance_templates \
-                     WHERE LOWER(id) = LOWER(?1) OR LOWER(name) = LOWER(?1) LIMIT 1"
-                )?;
-                let mut rows = stmt.query(rusqlite::params![regulation])?;
-                if let Some(row) = rows.next()? {
-                    let id: String = row.get(0)?;
-                    let name: String = row.get(1)?;
-                    let description: Option<String> = row.get(2)?;
-                    let checkpoints: String = row.get(3)?;
-                    Ok(Some((id, name, description, checkpoints)))
-                } else {
-                    Ok(None)
-                }
-            }).map_err(|e| e.to_string())?;
+            let custom_tpl = database
+                .with_connection(|conn| {
+                    let mut stmt = conn.prepare(
+                        "SELECT id, name, description, checkpoints FROM compliance_templates \
+                     WHERE LOWER(id) = LOWER(?1) OR LOWER(name) = LOWER(?1) LIMIT 1",
+                    )?;
+                    let mut rows = stmt.query(rusqlite::params![regulation])?;
+                    if let Some(row) = rows.next()? {
+                        let id: String = row.get(0)?;
+                        let name: String = row.get(1)?;
+                        let description: Option<String> = row.get(2)?;
+                        let checkpoints: String = row.get(3)?;
+                        Ok(Some((id, name, description, checkpoints)))
+                    } else {
+                        Ok(None)
+                    }
+                })
+                .map_err(|e| e.to_string())?;
 
             if let Some((_id, name, description, checkpoints_str)) = custom_tpl {
-                let checkpoints_val: serde_json::Value = serde_json::from_str(&checkpoints_str)
-                    .unwrap_or(serde_json::Value::Null);
+                let checkpoints_val: serde_json::Value =
+                    serde_json::from_str(&checkpoints_str).unwrap_or(serde_json::Value::Null);
 
                 let mut principles = Vec::new();
                 if let serde_json::Value::Array(arr) = checkpoints_val {
                     for item in arr {
-                        let cp_name = item.get("name").and_then(|v| v.as_str()).unwrap_or("Custom Rule").to_string();
-                        let cp_desc = item.get("description").and_then(|v| v.as_str()).unwrap_or("Evaluated custom checkpoint rule").to_string();
+                        let cp_name = item
+                            .get("name")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("Custom Rule")
+                            .to_string();
+                        let cp_desc = item
+                            .get("description")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("Evaluated custom checkpoint rule")
+                            .to_string();
                         principles.push(json!({
                             "name": cp_name,
                             "status": "COMPLIANT",
@@ -230,9 +228,11 @@ pub fn generate_compliance_report(
 pub fn get_local_telemetry(
     database: State<'_, Arc<Database>>,
 ) -> Result<serde_json::Value, String> {
-    let opt_in = database.with_connection(|conn| {
-        settings_repo::get(conn, "telemetry_opt_in")
-    }).map_err(|e| e.to_string())?.unwrap_or_else(|| "false".to_string()) == "true";
+    let opt_in = database
+        .with_connection(|conn| settings_repo::get(conn, "telemetry_opt_in"))
+        .map_err(|e| e.to_string())?
+        .unwrap_or_else(|| "false".to_string())
+        == "true";
 
     if !opt_in {
         return Ok(json!({
@@ -245,12 +245,13 @@ pub fn get_local_telemetry(
         let session_count: i64 = conn.query_row("SELECT COUNT(*) FROM sessions", [], |r| r.get(0)).unwrap_or(0);
         let message_count: i64 = conn.query_row("SELECT COUNT(*) FROM messages", [], |r| r.get(0)).unwrap_or(0);
         let document_count: i64 = conn.query_row("SELECT COUNT(*) FROM documents", [], |r| r.get(0)).unwrap_or(0);
-        
+
         let avg_latency: f64 = conn.query_row(
-            "SELECT AVG(latency_ms) FROM messages WHERE role = 'assistant' AND latency_ms IS NOT NULL", 
-            [], 
+            "SELECT AVG(latency_ms) FROM messages WHERE role = 'assistant' AND latency_ms IS NOT NULL",
+            [],
             |r| r.get::<_, Option<f64>>(0)
         ).unwrap_or(None).unwrap_or(0.0);
+
 
         let total_spent_str = settings_repo::get(conn, "security.api_spending_current")?
             .unwrap_or_else(|| "0.0".to_string());
@@ -386,21 +387,22 @@ pub async fn validate_sso_token(
             } else {
                 Ok(TokenValidationResult {
                     valid: false,
-                    error: Some(format!("OIDC endpoint returned error status: {}", res.status())),
+                    error: Some(format!(
+                        "OIDC endpoint returned error status: {}",
+                        res.status()
+                    )),
                     username: None,
                     email: None,
                     exp: None,
                 })
             }
         }
-        Err(err) => {
-            Ok(TokenValidationResult {
-                valid: false,
-                error: Some(format!("Failed to connect to OIDC discovery URL: {}", err)),
-                username: None,
-                email: None,
-                exp: None,
-            })
-        }
+        Err(err) => Ok(TokenValidationResult {
+            valid: false,
+            error: Some(format!("Failed to connect to OIDC discovery URL: {}", err)),
+            username: None,
+            email: None,
+            exp: None,
+        }),
     }
 }

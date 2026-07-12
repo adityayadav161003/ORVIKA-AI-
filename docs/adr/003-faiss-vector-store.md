@@ -1,6 +1,6 @@
 # ADR 003: FAISS Vector Store
 
-**Status:** Accepted
+**Status:** Superseded by [ADR 006](file:///c:/Users/adipi/Downloads/ORVIKA-AI/ORVIKA-AI/docs/adr/006-chroma-fts5-hybrid-store.md)
 
 ## Context
 

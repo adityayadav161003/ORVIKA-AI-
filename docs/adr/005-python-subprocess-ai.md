@@ -1,6 +1,6 @@
 # ADR 005: Python Subprocess AI
 
-**Status:** Accepted
+**Status:** Partially superseded by [ADR 007](file:///c:/Users/adipi/Downloads/ORVIKA-AI/ORVIKA-AI/docs/adr/007-local-ai-sidecar.md) (persistent FastAPI server for latency-critical tasks)
 
 ## Context
 

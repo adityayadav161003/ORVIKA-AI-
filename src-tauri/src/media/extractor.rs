@@ -1,6 +1,6 @@
+use crate::utils::error::{AppError, AppResult};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use crate::utils::error::{AppError, AppResult};
 
 /// Spawns an `ffmpeg` process to extract raw PCM audio (16kHz, mono, 16-bit)
 /// from a video/audio file to a target WAV file path.

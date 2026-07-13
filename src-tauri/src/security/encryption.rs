@@ -73,7 +73,6 @@ impl Aes256GcmCipher {
         hasher.finalize().into()
     }
 
-
     /// Encrypt `plaintext` using AES-256-GCM with a fresh random nonce.
     pub fn encrypt(&self, plaintext: &[u8]) -> AppResult<EncryptedBlob> {
         let mut nonce_bytes = [0u8; 12];

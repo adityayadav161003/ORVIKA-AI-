@@ -273,10 +273,7 @@ fn build_metadata(heading_path: &Option<String>, ocr_confidence: Option<f32>) ->
         );
     }
     if let Some(conf) = ocr_confidence {
-        obj.insert(
-            "ocr_confidence".to_owned(),
-            serde_json::json!(conf),
-        );
+        obj.insert("ocr_confidence".to_owned(), serde_json::json!(conf));
     }
 
     if obj.is_empty() {
@@ -324,7 +321,10 @@ mod tests {
     }
 
     fn word_text(n: usize) -> String {
-        (0..n).map(|i| format!("word{}", i)).collect::<Vec<_>>().join(" ")
+        (0..n)
+            .map(|i| format!("word{}", i))
+            .collect::<Vec<_>>()
+            .join(" ")
     }
 
     // -----------------------------------------------------------------------
@@ -375,7 +375,10 @@ mod tests {
         let blocks = vec![block(&["Section A"], &word_text(200))];
         let chunks = chunk_blocks(&blocks, "doc1", &config);
 
-        assert!(chunks.len() > 1, "Should produce more than one chunk for 200 words with size=50");
+        assert!(
+            chunks.len() > 1,
+            "Should produce more than one chunk for 200 words with size=50"
+        );
         for chunk in &chunks {
             // Each chunk should not exceed chunk_size + a small rounding margin
             let tokens = chunk.content.split_whitespace().count();
@@ -443,14 +446,8 @@ mod tests {
             .filter(|c| c.section_heading.as_deref() == Some("Sec2"))
             .collect();
 
-        assert!(
-            !sec1_chunks.is_empty(),
-            "Should have chunks for Sec1"
-        );
-        assert!(
-            !sec2_chunks.is_empty(),
-            "Should have chunks for Sec2"
-        );
+        assert!(!sec1_chunks.is_empty(), "Should have chunks for Sec1");
+        assert!(!sec2_chunks.is_empty(), "Should have chunks for Sec2");
         // Total chunks = sec1 + sec2 (no cross-boundary chunks)
         assert_eq!(
             chunks.len(),

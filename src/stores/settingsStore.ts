@@ -37,7 +37,8 @@ const DEFAULTS: AppSettings = {
   gpuBatchSize: 512,
   autoSaveInterval: 30,
   isFirstRun: true,
-  defaultSystemPrompt: "You are a helpful, harmless, and honest AI assistant. You always answer directly and concisely.",
+  defaultSystemPrompt:
+    "You are a helpful, harmless, and honest AI assistant. You always answer directly and concisely.",
   defaultCloudProvider: "openai",
   fontSize: 14,
   reducedMotion: false,
@@ -103,7 +104,10 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
       const settings: AppSettings = {
         privacyLevel: (raw["privacy_level"] as PrivacyLevel) ?? DEFAULTS.privacyLevel,
         theme: (raw["theme"] as Theme) ?? DEFAULTS.theme,
-        inferenceThreads: parseInt(raw["inference_threads"] ?? String(DEFAULTS.inferenceThreads), 10),
+        inferenceThreads: parseInt(
+          raw["inference_threads"] ?? String(DEFAULTS.inferenceThreads),
+          10,
+        ),
         gpuLayers: raw["gpu_layers"] ?? DEFAULTS.gpuLayers,
         gpuContextSize: parseInt(raw["gpu_context_size"] ?? String(DEFAULTS.gpuContextSize), 10),
         gpuBatchSize: parseInt(raw["gpu_batch_size"] ?? String(DEFAULTS.gpuBatchSize), 10),
@@ -119,7 +123,10 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
         telemetryOptIn: raw["telemetry_opt_in"] === "true",
         teamSyncEnabled: raw["team_sync_enabled"] === "true",
         teamSyncUrl: raw["team_sync_url"] ?? DEFAULTS.teamSyncUrl,
-        teamSyncInterval: parseInt(raw["team_sync_interval"] ?? String(DEFAULTS.teamSyncInterval), 10),
+        teamSyncInterval: parseInt(
+          raw["team_sync_interval"] ?? String(DEFAULTS.teamSyncInterval),
+          10,
+        ),
         ssoToken: raw["sso_token"] ?? DEFAULTS.ssoToken,
         oidcDiscoveryUrl: raw["oidc_discovery_url"] ?? DEFAULTS.oidcDiscoveryUrl,
         modelRegistryUrl: raw["model_registry_url"] ?? DEFAULTS.modelRegistryUrl,
@@ -128,7 +135,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
       applyTheme(settings.theme);
       applyFontSize(settings.fontSize);
       applyReducedMotion(settings.reducedMotion);
-      
+
       set({ ...settings, loaded: true });
     } catch {
       // browser mode — use defaults, not first run

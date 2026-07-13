@@ -41,9 +41,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         <span className="font-mono text-2xl font-bold text-white">P</span>
       </div>
       <div>
-        <h2 className="font-serif text-2xl font-bold text-text-primary">
-          Welcome to ORVIKA AI
-        </h2>
+        <h2 className="font-serif text-2xl font-bold text-text-primary">Welcome to ORVIKA AI</h2>
         <p className="mt-2 text-sm text-text-secondary">
           Your AI runs entirely on your device. Your documents never leave your computer.
         </p>
@@ -120,7 +118,9 @@ function ModelStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
             key={m.id}
             className={cn(
               "flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors",
-              selected === m.id ? "border-accent bg-accent-light" : "border-border hover:border-accent/30",
+              selected === m.id
+                ? "border-accent bg-accent-light"
+                : "border-border hover:border-accent/30",
             )}
           >
             <input
@@ -140,7 +140,9 @@ function ModelStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
           </label>
         ))}
         {models.length === 0 && (
-          <p className="text-sm text-text-muted">No models available (check internet connection).</p>
+          <p className="text-sm text-text-muted">
+            No models available (check internet connection).
+          </p>
         )}
       </div>
 
@@ -155,7 +157,10 @@ function ModelStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-surface">
-            <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
+            <div
+              className="h-full rounded-full bg-accent transition-all"
+              style={{ width: `${pct}%` }}
+            />
           </div>
         </div>
       )}
@@ -207,7 +212,8 @@ function ApiKeyStep({ onFinish }: { onFinish: () => void }) {
         provider: "openai",
         key: key.trim(),
       });
-      if (!valid) throw new Error("Key doesn't look like a valid OpenAI API key (should start with sk-)");
+      if (!valid)
+        throw new Error("Key doesn't look like a valid OpenAI API key (should start with sk-)");
       await invoke("store_api_key", { provider: "openai", plaintextKey: key.trim() });
       setSaved(true);
     } catch (err) {
@@ -220,9 +226,7 @@ function ApiKeyStep({ onFinish }: { onFinish: () => void }) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="font-serif text-xl font-bold text-text-primary">
-          Optional: API Key
-        </h2>
+        <h2 className="font-serif text-xl font-bold text-text-primary">Optional: API Key</h2>
         <p className="mt-1 text-sm text-text-secondary">
           Add an OpenAI API key to enable the Research Agent (cloud queries use{" "}
           <strong>only sanitized public queries</strong> — never your documents).
@@ -290,9 +294,7 @@ export function SetupWizard() {
         </div>
 
         {step === 1 && <WelcomeStep onNext={() => setStep(2)} />}
-        {step === 2 && (
-          <ModelStep onNext={() => setStep(3)} onSkip={() => setStep(3)} />
-        )}
+        {step === 2 && <ModelStep onNext={() => setStep(3)} onSkip={() => setStep(3)} />}
         {step === 3 && <ApiKeyStep onFinish={finish} />}
       </div>
     </div>

@@ -4,17 +4,17 @@
 
 ## Tasks
 
-| ID | Task | Implementation | Status |
-|----|------|----------------|--------|
-| S2-T1 | llama.cpp subprocess (server mode) | `llm/runtime.rs` spawns `llama-server` on `127.0.0.1:8081` | ✅ |
-| S2-T2 | LLM runtime lifecycle | `start` / `stop` / `restart` + health polling + crash detection | ✅ |
-| S2-T3 | Streaming inference | `llm/inference.rs` → OpenAI-compatible SSE → Tauri `Channel` + events | ✅ |
-| S2-T4 | Model download + SHA-256 | `llm/model_manager.rs` + `model_downloads` table | ✅ |
-| S2-T5 | GPU auto-detection | `llm/hardware.rs` via `nvidia-smi`, CPU fallback, `-ngl` selection | ✅ |
-| S2-T6 | Hardware benchmark | `llm/benchmark.rs` — TTFT + tokens/sec report | ✅ |
-| S2-T7 | Frontend UI | Premium LlmDemo.tsx — status badge, GPU card, progress bar, benchmark card | ✅ |
-| S2-T8 | Delete model IPC | `delete_model` command wired to DB + runtime | ✅ |
-| S2-T9 | System prompt | `models/prompts/default.md` — research assistant persona | ✅ |
+| ID    | Task                               | Implementation                                                             | Status |
+| ----- | ---------------------------------- | -------------------------------------------------------------------------- | ------ |
+| S2-T1 | llama.cpp subprocess (server mode) | `llm/runtime.rs` spawns `llama-server` on `127.0.0.1:8081`                 | ✅     |
+| S2-T2 | LLM runtime lifecycle              | `start` / `stop` / `restart` + health polling + crash detection            | ✅     |
+| S2-T3 | Streaming inference                | `llm/inference.rs` → OpenAI-compatible SSE → Tauri `Channel` + events      | ✅     |
+| S2-T4 | Model download + SHA-256           | `llm/model_manager.rs` + `model_downloads` table                           | ✅     |
+| S2-T5 | GPU auto-detection                 | `llm/hardware.rs` via `nvidia-smi`, CPU fallback, `-ngl` selection         | ✅     |
+| S2-T6 | Hardware benchmark                 | `llm/benchmark.rs` — TTFT + tokens/sec report                              | ✅     |
+| S2-T7 | Frontend UI                        | Premium LlmDemo.tsx — status badge, GPU card, progress bar, benchmark card | ✅     |
+| S2-T8 | Delete model IPC                   | `delete_model` command wired to DB + runtime                               | ✅     |
+| S2-T9 | System prompt                      | `models/prompts/default.md` — research assistant persona                   | ✅     |
 
 ## Prerequisites (developer machine)
 

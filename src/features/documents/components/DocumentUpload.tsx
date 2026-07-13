@@ -15,19 +15,21 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
     try {
       const selected = await open({
         multiple: false,
-        filters: [{
-          name: 'Documents',
-          extensions: ['pdf', 'docx', 'pptx', 'txt', 'md']
-        }]
+        filters: [
+          {
+            name: "Documents",
+            extensions: ["pdf", "docx", "pptx", "txt", "md"],
+          },
+        ],
       });
 
       if (!selected) return;
 
       const filePath = Array.isArray(selected) ? selected[0] : selected;
-      
+
       setIsUploading(true);
       setError(null);
-      
+
       await invoke("upload_document", {
         filePath: filePath,
         sessionId: null,
@@ -48,18 +50,12 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       <p className="mb-4 text-sm text-text-secondary text-center max-w-sm">
         Select a PDF, DOCX, PPTX, TXT, or MD file to parse and analyze locally.
       </p>
-      
+
       {error && (
-        <div className="mb-4 text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-md">
-          {error}
-        </div>
+        <div className="mb-4 text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-md">{error}</div>
       )}
 
-      <Button 
-        onClick={handleSelectFile} 
-        disabled={isUploading}
-        className="w-48"
-      >
+      <Button onClick={handleSelectFile} disabled={isUploading} className="w-48">
         {isUploading ? "Parsing..." : "Select File"}
       </Button>
     </div>

@@ -1,5 +1,7 @@
 # ORVIKA AI — Graphify Context File
+
 # Purpose: Preserve full build context across chat sessions so nothing is lost.
+
 # Load this file at the start of every new session to instantly restore state.
 
 ---
@@ -47,28 +49,29 @@ Python:
 
 ## Critical Files Map
 
-| What | Path |
-|---|---|
-| Rust entry | `src-tauri/src/lib.rs` |
-| LLM sidecar (pattern to copy) | `src-tauri/src/llm/runtime.rs` |
-| LLM model download (pattern to copy) | `src-tauri/src/llm/model_manager.rs` |
-| Python manager (per-call subprocess) | `src-tauri/src/python/manager.rs` |
-| DB connection + migrations | `src-tauri/src/db/connection.rs`, `src-tauri/src/db/migration.rs` |
-| Chunk DB repo | `src-tauri/src/db/chunk_repo.rs` |
-| Document command handler | `src-tauri/src/commands/documents.rs` |
-| Vector store (JSON stub — replace) | `src-tauri/src/vector_store/store.rs` |
-| Cargo.toml | `src-tauri/Cargo.toml` |
-| Vite config | `config/vite.config.ts` |
-| Migrations dir | `src-tauri/migrations/` |
-| Python requirements | `src-tauri/python/requirements.txt` |
-| System prompt | `models/prompts/default.md` |
-| ADR dir | `docs/adr/` |
+| What                                 | Path                                                              |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| Rust entry                           | `src-tauri/src/lib.rs`                                            |
+| LLM sidecar (pattern to copy)        | `src-tauri/src/llm/runtime.rs`                                    |
+| LLM model download (pattern to copy) | `src-tauri/src/llm/model_manager.rs`                              |
+| Python manager (per-call subprocess) | `src-tauri/src/python/manager.rs`                                 |
+| DB connection + migrations           | `src-tauri/src/db/connection.rs`, `src-tauri/src/db/migration.rs` |
+| Chunk DB repo                        | `src-tauri/src/db/chunk_repo.rs`                                  |
+| Document command handler             | `src-tauri/src/commands/documents.rs`                             |
+| Vector store (JSON stub — replace)   | `src-tauri/src/vector_store/store.rs`                             |
+| Cargo.toml                           | `src-tauri/Cargo.toml`                                            |
+| Vite config                          | `config/vite.config.ts`                                           |
+| Migrations dir                       | `src-tauri/migrations/`                                           |
+| Python requirements                  | `src-tauri/python/requirements.txt`                               |
+| System prompt                        | `models/prompts/default.md`                                       |
+| ADR dir                              | `docs/adr/`                                                       |
 
 ---
 
 ## What Is Real vs. Stub (as of session start 2026-07-14)
 
 ### REAL (do not rewrite):
+
 - Tauri 2 + React 18 shell, pages, design system, routing
 - SQLite schema (migrations 001–015): sessions, messages, documents, document_chunks, research_sessions, research_queries, audit_log, settings, api_keys, model_downloads, compliance_templates
 - `llm/runtime.rs`, `llm/model_manager.rs`, `llm/hardware.rs`, `llm/inference.rs`, `llm/config.rs`, `llm/benchmark.rs`, `llm/types.rs`
@@ -79,13 +82,14 @@ Python:
 - `document/types.rs`, `document/parser.rs`, `document/chunker.rs`, `document/ocr.rs` (Sprint 3 complete)
 
 ### STUBS (one line: `// Sprint stub`):
+
 - `embedding/engine.rs`, `embedding/types.rs`
 - `vector_store/search.rs`, `vector_store/types.rs`
 - `services/chat.rs`, `services/research.rs`, `services/session.rs`, `services/settings.rs`, `services/privacy.rs`, `services/media.rs`
 - `llm/context.rs`
 
-
 ### PROTOTYPE (functional but wrong for production):
+
 - `vector_store/store.rs` — linear JSON scan, entire index in RAM, no hybrid, O(n). **Replace entirely in Sprint 4.**
 
 ---
@@ -143,6 +147,7 @@ Sprint 10 (security/privacy) ─── parallel with 6-9
 ## Weaviate Schema (implement exactly in Sprint 4)
 
 ### Collection: DocumentChunk
+
 ```
 content            text     (BM25 indexed)
 documentId         text     (filterable)
@@ -158,6 +163,7 @@ Vector: dim=768 (bge-base-en-v1.5), vectorizer: none
 ```
 
 ### Collection: MediaSegment
+
 ```
 content            text
 documentId         text
@@ -173,12 +179,12 @@ createdAt          date
 
 ## Ports & Config
 
-| Service | Host | Port | Data dir |
-|---|---|---|---|
-| llama-server | 127.0.0.1 | 8081 | %APPDATA%/com.orvika.app/bin/ |
-| weaviate | 127.0.0.1 | 8079 | %APPDATA%/com.orvika.app/data/weaviate/ |
-| embedding-server | 127.0.0.1 | 8082 | %APPDATA%/com.orvika.app/python_venv/ |
-| SQLite | — | — | %APPDATA%/com.orvika.app/data/app.db |
+| Service          | Host      | Port | Data dir                                |
+| ---------------- | --------- | ---- | --------------------------------------- |
+| llama-server     | 127.0.0.1 | 8081 | %APPDATA%/com.orvika.app/bin/           |
+| weaviate         | 127.0.0.1 | 8079 | %APPDATA%/com.orvika.app/data/weaviate/ |
+| embedding-server | 127.0.0.1 | 8082 | %APPDATA%/com.orvika.app/python_venv/   |
+| SQLite           | —         | —    | %APPDATA%/com.orvika.app/data/app.db    |
 
 ---
 
@@ -188,7 +194,6 @@ createdAt          date
 - **Current status:** Sprint 3 (Ingestion & Chunking) is 100% complete, fully verified by unit tests, compiled, and committed to git.
 - **Active sprint being planned:** Sprint 4 (Weaviate Vector Store Integration)
 - **Next milestone:** Implement Weaviate sidecar download/runtime launcher + client REST/GraphQL client
-
 
 ---
 

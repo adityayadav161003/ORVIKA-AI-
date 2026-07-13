@@ -7,9 +7,9 @@ use serde::Serialize;
 use crate::utils::error::{AppError, AppResult};
 
 pub mod api_key_repo;
-pub mod compliance_repo;
 pub mod audit_repo;
 pub mod chunk_repo;
+pub mod compliance_repo;
 pub mod connection;
 pub mod document_repo;
 pub mod message_repo;

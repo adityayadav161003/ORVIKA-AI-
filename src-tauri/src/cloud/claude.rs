@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::cloud::traits::CloudProvider;
+use serde::{Deserialize, Serialize};
 
 pub struct ClaudeProvider;
 
@@ -31,7 +31,7 @@ struct ClaudeContentBlock {
 impl CloudProvider for ClaudeProvider {
     async fn execute_query(&self, query: &str, api_key: &str) -> Result<String, String> {
         let client = reqwest::Client::new();
-        
+
         let prompt = format!(
             "You are an expert research analyst. Perform comprehensive web-like research on the following topic. Provide a detailed summary of key facts, figures, and findings:\n\nTopic: {}",
             query
@@ -59,7 +59,10 @@ impl CloudProvider for ClaudeProvider {
         if !response.status().is_success() {
             let status = response.status();
             let err_text = response.text().await.unwrap_or_default();
-            return Err(format!("Claude API error (Status {}): {}", status, err_text));
+            return Err(format!(
+                "Claude API error (Status {}): {}",
+                status, err_text
+            ));
         }
 
         let resp_data: ClaudeResponse = response

@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use rusqlite::{params, Connection};
 use crate::utils::error::AppResult;
+use rusqlite::{params, Connection};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -49,7 +49,7 @@ pub fn list(conn: &Connection) -> AppResult<Vec<ComplianceTemplate>> {
             updated_at: row.get(5)?,
         })
     })?;
-    
+
     let mut list = Vec::new();
     for row in rows {
         list.push(row?);
@@ -58,6 +58,9 @@ pub fn list(conn: &Connection) -> AppResult<Vec<ComplianceTemplate>> {
 }
 
 pub fn delete(conn: &Connection, id: &str) -> AppResult<()> {
-    conn.execute("DELETE FROM compliance_templates WHERE id = ?1", params![id])?;
+    conn.execute(
+        "DELETE FROM compliance_templates WHERE id = ?1",
+        params![id],
+    )?;
     Ok(())
 }

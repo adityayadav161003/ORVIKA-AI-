@@ -162,8 +162,6 @@ export function ChatPage() {
     };
   }, [refreshSessions]);
 
-
-
   const resolveModelId = async () => {
     try {
       const models = await invoke<DownloadedModel[]>("list_downloaded_models");
@@ -239,7 +237,7 @@ export function ChatPage() {
 
     const sessionId = activeSessionId;
     const content = draft.trim();
-    
+
     setDraft("");
     setStreaming(true);
     setError(null);
@@ -313,7 +311,8 @@ export function ChatPage() {
     setError(null);
 
     const pendingAssistant = makePendingMessage("assistant", activeSessionId!);
-    pendingAssistant.content = "⏳ Generating web research queries & executing privacy sanitization...";
+    pendingAssistant.content =
+      "⏳ Generating web research queries & executing privacy sanitization...";
     setMessages((current) => [...current, pendingAssistant]);
 
     let unlisten: (() => void) | null = null;
@@ -383,7 +382,7 @@ export function ChatPage() {
   const handleExport = () => {
     if (!activeSession) return;
     const content = formatChatForExport(activeSession, messages);
-    const filename = `${activeSession.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.md`;
+    const filename = `${activeSession.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_export.md`;
     downloadStringAsFile(content, filename);
   };
 
@@ -478,11 +477,14 @@ export function ChatPage() {
               </button>
             </div>
           )}
-          
+
           {editingPrompt && activeSession && (
             <div className="mt-3 rounded-md border border-border bg-surface p-3 space-y-3">
               <div>
-                <label htmlFor="system-prompt" className="mb-1 block text-sm font-medium text-text-primary">
+                <label
+                  htmlFor="system-prompt"
+                  className="mb-1 block text-sm font-medium text-text-primary"
+                >
                   Session System Prompt
                 </label>
                 <p className="mb-2 text-xs text-text-muted">
@@ -498,7 +500,10 @@ export function ChatPage() {
               </div>
 
               <div>
-                <label htmlFor="cloud-provider-override" className="mb-1 block text-sm font-medium text-text-primary">
+                <label
+                  htmlFor="cloud-provider-override"
+                  className="mb-1 block text-sm font-medium text-text-primary"
+                >
                   Research Provider Override
                 </label>
                 <p className="mb-2 text-xs text-text-muted">

@@ -7,12 +7,11 @@ use std::time::Duration;
 use reqwest::Client;
 use tauri::{AppHandle, Emitter, Manager};
 
+use crate::db::Database;
 use crate::llm::config::{self, server_base_url, DEFAULT_HOST, DEFAULT_PORT, HEALTH_PATH};
 use crate::llm::hardware::{detect_hardware, gpu_layers_flag};
 use crate::llm::types::{LlmServerState, LlmStatus};
-use crate::db::Database;
 use crate::utils::error::{AppError, AppResult};
-
 
 pub struct LlmRuntime {
     pub app_data_dir: std::path::PathBuf,
@@ -134,17 +133,19 @@ impl LlmRuntime {
 
         // Expose performance parameters from settings database
         let context_size = if let Some(db) = app.try_state::<Arc<Database>>() {
-            db.with_connection(|conn| {
-                crate::db::settings_repo::get(conn, "gpu_context_size")
-            }).ok().flatten().unwrap_or_else(|| "2048".to_string())
+            db.with_connection(|conn| crate::db::settings_repo::get(conn, "gpu_context_size"))
+                .ok()
+                .flatten()
+                .unwrap_or_else(|| "2048".to_string())
         } else {
             "2048".to_string()
         };
 
         let batch_size = if let Some(db) = app.try_state::<Arc<Database>>() {
-            db.with_connection(|conn| {
-                crate::db::settings_repo::get(conn, "gpu_batch_size")
-            }).ok().flatten().unwrap_or_else(|| "512".to_string())
+            db.with_connection(|conn| crate::db::settings_repo::get(conn, "gpu_batch_size"))
+                .ok()
+                .flatten()
+                .unwrap_or_else(|| "512".to_string())
         } else {
             "512".to_string()
         };

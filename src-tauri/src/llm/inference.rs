@@ -75,7 +75,7 @@ where
                 break;
             }
         }
-        
+
         let chunk = chunk.map_err(|err| AppError::Other(format!("Stream read error: {err}")))?;
         buffer.push_str(&String::from_utf8_lossy(&chunk));
 
@@ -97,7 +97,7 @@ where
                     if let Some(token) = choice.delta.content {
                         if !token.is_empty() {
                             full_response.push_str(&token);
-                            
+
                             if let Some(ref mut cb) = on_chunk {
                                 cb(&full_response);
                             }
@@ -220,15 +220,21 @@ pub async fn chat_completion(
     if !response.status().is_success() {
         let status = response.status();
         let text = response.text().await.unwrap_or_default();
-        return Err(AppError::Other(format!("Chat completion error {status}: {text}")));
+        return Err(AppError::Other(format!(
+            "Chat completion error {status}: {text}"
+        )));
     }
 
-    let parsed = response.json::<ChatResponse>().await
+    let parsed = response
+        .json::<ChatResponse>()
+        .await
         .map_err(|err| AppError::Other(format!("Failed to parse chat response: {err}")))?;
 
     if let Some(choice) = parsed.choices.into_iter().next() {
         Ok(choice.message.content)
     } else {
-        Err(AppError::Other("Empty choices array in chat response".into()))
+        Err(AppError::Other(
+            "Empty choices array in chat response".into(),
+        ))
     }
 }

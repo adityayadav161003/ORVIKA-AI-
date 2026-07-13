@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, Row, OptionalExtension};
+use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
 use crate::utils::error::AppResult;
@@ -81,7 +81,10 @@ fn map_query(row: &Row) -> rusqlite::Result<ResearchQuery> {
     })
 }
 
-pub fn create_session(conn: &Connection, session: NewResearchSession) -> AppResult<ResearchSession> {
+pub fn create_session(
+    conn: &Connection,
+    session: NewResearchSession,
+) -> AppResult<ResearchSession> {
     conn.execute(
         "INSERT INTO research_sessions (id, session_id, message_id, status, total_queries, knowledge_gaps)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -100,13 +103,13 @@ pub fn create_session(conn: &Connection, session: NewResearchSession) -> AppResu
 
 pub fn create_queries(conn: &Connection, queries: &[NewResearchQuery]) -> AppResult<()> {
     conn.execute("BEGIN TRANSACTION", [])?;
-    
+
     let result: AppResult<()> = (|| {
         let mut stmt = conn.prepare(
             "INSERT INTO research_queries (id, research_session_id, query_index, topic, raw_query, sanitized_query, risk_level, status)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"
         )?;
-        
+
         for q in queries {
             stmt.execute(params![
                 q.id,
@@ -121,7 +124,7 @@ pub fn create_queries(conn: &Connection, queries: &[NewResearchQuery]) -> AppRes
         }
         Ok(())
     })();
-    
+
     if result.is_ok() {
         conn.execute("COMMIT", [])?;
     } else {
@@ -135,13 +138,17 @@ pub fn get_session(conn: &Connection, id: &str) -> AppResult<Option<ResearchSess
         "SELECT * FROM research_sessions WHERE id = ?1",
         params![id],
         map_session,
-    ).optional().map_err(Into::into)
+    )
+    .optional()
+    .map_err(Into::into)
 }
 
 pub fn list_queries(conn: &Connection, research_session_id: &str) -> AppResult<Vec<ResearchQuery>> {
-    let mut stmt = conn.prepare("SELECT * FROM research_queries WHERE research_session_id = ?1 ORDER BY query_index ASC")?;
+    let mut stmt = conn.prepare(
+        "SELECT * FROM research_queries WHERE research_session_id = ?1 ORDER BY query_index ASC",
+    )?;
     let rows = stmt.query_map(params![research_session_id], map_query)?;
-    
+
     let mut queries = Vec::new();
     for row in rows {
         queries.push(row?);
@@ -157,7 +164,12 @@ pub fn update_session_status(conn: &Connection, id: &str, status: &str) -> AppRe
     Ok(())
 }
 
-pub fn update_query_status(conn: &Connection, id: &str, status: &str, user_approved: Option<bool>) -> AppResult<()> {
+pub fn update_query_status(
+    conn: &Connection,
+    id: &str,
+    status: &str,
+    user_approved: Option<bool>,
+) -> AppResult<()> {
     conn.execute(
         "UPDATE research_queries SET status = ?1, user_approved = COALESCE(?2, user_approved) WHERE id = ?3",
         params![status, user_approved, id],
@@ -165,7 +177,12 @@ pub fn update_query_status(conn: &Connection, id: &str, status: &str, user_appro
     Ok(())
 }
 
-pub fn update_query_response(conn: &Connection, id: &str, response: &str, status: &str) -> AppResult<()> {
+pub fn update_query_response(
+    conn: &Connection,
+    id: &str,
+    response: &str,
+    status: &str,
+) -> AppResult<()> {
     conn.execute(
         "UPDATE research_queries SET response = ?1, status = ?2 WHERE id = ?3",
         params![response, status, id],
@@ -184,7 +201,7 @@ pub fn increment_completed_queries(conn: &Connection, id: &str) -> AppResult<()>
 pub fn list_all_sessions(conn: &Connection) -> AppResult<Vec<ResearchSession>> {
     let mut stmt = conn.prepare("SELECT * FROM research_sessions ORDER BY created_at DESC")?;
     let rows = stmt.query_map([], map_session)?;
-    
+
     let mut sessions = Vec::new();
     for row in rows {
         sessions.push(row?);
@@ -193,10 +210,6 @@ pub fn list_all_sessions(conn: &Connection) -> AppResult<Vec<ResearchSession>> {
 }
 
 pub fn delete_session(conn: &Connection, id: &str) -> AppResult<()> {
-    conn.execute(
-        "DELETE FROM research_sessions WHERE id = ?1",
-        params![id],
-    )?;
+    conn.execute("DELETE FROM research_sessions WHERE id = ?1", params![id])?;
     Ok(())
 }
-

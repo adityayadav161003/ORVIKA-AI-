@@ -1,6 +1,6 @@
-use rusqlite::Connection;
 use crate::db::audit_repo;
 use crate::utils::error::AppResult;
+use rusqlite::Connection;
 
 /// Log an outgoing cloud API call.
 pub fn log_cloud_call(

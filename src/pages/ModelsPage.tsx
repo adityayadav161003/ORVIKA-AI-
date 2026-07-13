@@ -80,9 +80,17 @@ function formatMs(ms: number): string {
 
 const STATE_CONFIG = {
   stopped: { label: "Stopped", dot: "bg-text-muted", badge: "text-text-muted bg-surface" },
-  starting: { label: "Starting…", dot: "bg-yellow-500 animate-pulse", badge: "text-yellow-700 bg-yellow-50" },
+  starting: {
+    label: "Starting…",
+    dot: "bg-yellow-500 animate-pulse",
+    badge: "text-yellow-700 bg-yellow-50",
+  },
   running: { label: "Running", dot: "bg-green-500", badge: "text-green-700 bg-green-50" },
-  crashed: { label: "Crashed", dot: "bg-accent-secondary", badge: "text-accent-secondary bg-accent-secondary/10" },
+  crashed: {
+    label: "Crashed",
+    dot: "bg-accent-secondary",
+    badge: "text-accent-secondary bg-accent-secondary/10",
+  },
 } as const;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -287,10 +295,12 @@ export function ModelsPage() {
     try {
       const selected = await open({
         multiple: false,
-        filters: [{
-          name: 'GGUF Model Files',
-          extensions: ['gguf']
-        }]
+        filters: [
+          {
+            name: "GGUF Model Files",
+            extensions: ["gguf"],
+          },
+        ],
       });
 
       if (!selected) return;
@@ -298,7 +308,7 @@ export function ModelsPage() {
 
       const modelName = prompt(
         "Enter a display name for this custom model:",
-        filePath.split(/[\\/]/).pop()?.replace(".gguf", "") || "Custom Model"
+        filePath.split(/[\\/]/).pop()?.replace(".gguf", "") || "Custom Model",
       );
       if (modelName === null) return;
 
@@ -316,11 +326,9 @@ export function ModelsPage() {
     }
   };
 
-  const handleSetActive = (modelId: string) =>
-    run(() => invoke("set_active_model", { modelId }));
+  const handleSetActive = (modelId: string) => run(() => invoke("set_active_model", { modelId }));
 
-  const handleDeleteModel = (modelId: string) =>
-    run(() => invoke("delete_model", { modelId }));
+  const handleDeleteModel = (modelId: string) => run(() => invoke("delete_model", { modelId }));
 
   const handleStart = () => run(() => invoke("start_llm_server"));
   const handleStop = () => run(() => invoke("stop_llm_server"));
@@ -398,7 +406,9 @@ export function ModelsPage() {
             )}
             <div className="text-text-muted sm:col-span-2">
               Binary:{" "}
-              <span className="text-text-primary">{llmStatus.binaryPath ?? "not found on PATH"}</span>
+              <span className="text-text-primary">
+                {llmStatus.binaryPath ?? "not found on PATH"}
+              </span>
             </div>
             <div className="text-text-muted sm:col-span-2">
               Active model:{" "}
@@ -407,7 +417,9 @@ export function ModelsPage() {
               </span>
             </div>
             {llmStatus.lastError && (
-              <div className="sm:col-span-2 text-accent-secondary">Error: {llmStatus.lastError}</div>
+              <div className="sm:col-span-2 text-accent-secondary">
+                Error: {llmStatus.lastError}
+              </div>
             )}
           </dl>
         ) : (
@@ -449,15 +461,11 @@ export function ModelsPage() {
 
       {/* ── Model management ── */}
       <section className="rounded-lg border border-border bg-white p-5 shadow-sm">
-        <h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-accent">
-          Models
-        </h2>
+        <h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-accent">Models</h2>
 
         {/* Registry picker */}
         <div className="mb-4 space-y-3">
-          <label className="block text-xs font-medium text-text-secondary">
-            Registry model
-          </label>
+          <label className="block text-xs font-medium text-text-secondary">Registry model</label>
           <select
             id="select-registry-model"
             className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
@@ -594,13 +602,10 @@ export function ModelsPage() {
           </div>
         ) : (
           <p className="text-sm text-text-muted">
-            No models downloaded yet. Select a model above and click{" "}
-            <em>Download from HF Hub</em>.
+            No models downloaded yet. Select a model above and click <em>Download from HF Hub</em>.
           </p>
         )}
       </section>
-
-
 
       {/* ── Benchmark ── */}
       <section className="rounded-lg border border-border bg-white p-5 shadow-sm">

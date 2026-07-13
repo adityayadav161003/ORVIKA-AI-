@@ -61,7 +61,8 @@ pub fn list_events(
     let mut query = "SELECT id, timestamp, event_type, session_id, details, 
                      outbound_content, destination, response_summary, 
                      sanitization_result, risk_level 
-                     FROM audit_log WHERE 1=1".to_string();
+                     FROM audit_log WHERE 1=1"
+        .to_string();
     let mut params_vec: Vec<String> = Vec::new();
 
     if let Some(sid) = session_id {
@@ -93,7 +94,7 @@ pub fn list_events(
     query.push_str(" ORDER BY timestamp DESC LIMIT 500");
 
     let mut stmt = conn.prepare(&query)?;
-    
+
     // We convert parameters to dynamic array for query_map
     let params_refs: Vec<&dyn rusqlite::ToSql> = params_vec
         .iter()
@@ -154,7 +155,7 @@ pub fn get_stats(conn: &Connection) -> AppResult<serde_json::Value> {
         [],
         |row| row.get(0),
     )?;
-    
+
     let risk_medium: i64 = conn.query_row(
         "SELECT COUNT(*) FROM audit_log WHERE risk_level = 'medium'",
         [],

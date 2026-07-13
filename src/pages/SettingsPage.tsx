@@ -24,16 +24,12 @@ interface DbStatus {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function SettingsSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-lg border border-border bg-white p-6 shadow-sm">
-      <h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-accent font-semibold">{title}</h2>
+      <h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-accent font-semibold">
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -228,7 +224,7 @@ export function SettingsPage() {
   const settings = useSettingsStore();
   const [providers, setProviders] = useState<ApiKeyInfo[]>([]);
   const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
-  
+
   // Telemetry state
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
   const [loadingTelemetry, setLoadingTelemetry] = useState(false);
@@ -283,8 +279,8 @@ export function SettingsPage() {
       {/* ── API Keys ── */}
       <SettingsSection title="Provider API Keys">
         <p className="mb-4 text-sm text-text-secondary">
-          Keys are encrypted with AES-256-GCM before being stored. They are machine-bound and
-          never transmitted to any server.
+          Keys are encrypted with AES-256-GCM before being stored. They are machine-bound and never
+          transmitted to any server.
         </p>
         <ApiKeyRow
           provider="openai"
@@ -391,20 +387,36 @@ export function SettingsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-3 bg-surface rounded-md border border-border">
-                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">Sessions</p>
-                  <p className="text-xl font-bold text-text-primary mt-1">{telemetry.sessionCount}</p>
+                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">
+                    Sessions
+                  </p>
+                  <p className="text-xl font-bold text-text-primary mt-1">
+                    {telemetry.sessionCount}
+                  </p>
                 </div>
                 <div className="p-3 bg-surface rounded-md border border-border">
-                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">Messages</p>
-                  <p className="text-xl font-bold text-text-primary mt-1">{telemetry.messageCount}</p>
+                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">
+                    Messages
+                  </p>
+                  <p className="text-xl font-bold text-text-primary mt-1">
+                    {telemetry.messageCount}
+                  </p>
                 </div>
                 <div className="p-3 bg-surface rounded-md border border-border">
-                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">Files Parsed</p>
-                  <p className="text-xl font-bold text-text-primary mt-1">{telemetry.documentCount}</p>
+                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">
+                    Files Parsed
+                  </p>
+                  <p className="text-xl font-bold text-text-primary mt-1">
+                    {telemetry.documentCount}
+                  </p>
                 </div>
                 <div className="p-3 bg-surface rounded-md border border-border">
-                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">API Costs</p>
-                  <p className="text-xl font-bold text-text-primary mt-1">${telemetry.totalCloudSpending.toFixed(3)}</p>
+                  <p className="text-[10px] uppercase text-text-muted font-semibold tracking-wider font-mono">
+                    API Costs
+                  </p>
+                  <p className="text-xl font-bold text-text-primary mt-1">
+                    ${telemetry.totalCloudSpending.toFixed(3)}
+                  </p>
                 </div>
               </div>
 
@@ -412,7 +424,7 @@ export function SettingsPage() {
                 <div className="flex justify-between">
                   <span>Avg Local Latency:</span>
                   <span className="text-text-primary font-semibold">
-                    {telemetry.averageLlmLatencyMs > 0 
+                    {telemetry.averageLlmLatencyMs > 0
                       ? `${(telemetry.averageLlmLatencyMs / 1000).toFixed(2)} seconds`
                       : "0.00 seconds"}
                   </span>
@@ -437,10 +449,12 @@ export function SettingsPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>NVIDIA GPU (CUDA):</span>
-                  <span className={cn(
-                    "font-semibold",
-                    telemetry.hardware?.hasNvidiaGpu ? "text-green-600" : "text-text-muted"
-                  )}>
+                  <span
+                    className={cn(
+                      "font-semibold",
+                      telemetry.hardware?.hasNvidiaGpu ? "text-green-600" : "text-text-muted",
+                    )}
+                  >
                     {telemetry.hardware?.hasNvidiaGpu ? "Available" : "Not Detected"}
                   </span>
                 </div>
@@ -476,9 +490,7 @@ export function SettingsPage() {
             min={1}
             max={32}
             value={settings.inferenceThreads}
-            onChange={(e) =>
-              void settings.set("inferenceThreads", parseInt(e.target.value, 10))
-            }
+            onChange={(e) => void settings.set("inferenceThreads", parseInt(e.target.value, 10))}
             className="w-20 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
         </Field>
@@ -507,17 +519,12 @@ export function SettingsPage() {
             max={32768}
             step={512}
             value={settings.gpuContextSize}
-            onChange={(e) =>
-              void settings.set("gpuContextSize", parseInt(e.target.value, 10))
-            }
+            onChange={(e) => void settings.set("gpuContextSize", parseInt(e.target.value, 10))}
             className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
         </Field>
 
-        <Field
-          label="GPU Batch Size"
-          description="Batch size (n_batch) for prompt evaluation."
-        >
+        <Field label="GPU Batch Size" description="Batch size (n_batch) for prompt evaluation.">
           <input
             id="input-gpu-batch-size"
             type="number"
@@ -525,9 +532,7 @@ export function SettingsPage() {
             max={2048}
             step={8}
             value={settings.gpuBatchSize}
-            onChange={(e) =>
-              void settings.set("gpuBatchSize", parseInt(e.target.value, 10))
-            }
+            onChange={(e) => void settings.set("gpuBatchSize", parseInt(e.target.value, 10))}
             className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
         </Field>
@@ -549,10 +554,7 @@ export function SettingsPage() {
           />
         </Field>
 
-        <Field
-          label="Font Size"
-          description="Adjust application readability typography scale."
-        >
+        <Field label="Font Size" description="Adjust application readability typography scale.">
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-muted">12px</span>
             <input
@@ -565,7 +567,9 @@ export function SettingsPage() {
               className="w-32 accent-accent cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30 rounded"
               aria-label="Adjust font size slider"
             />
-            <span className="text-xs font-mono font-bold text-text-primary">{settings.fontSize}px</span>
+            <span className="text-xs font-mono font-bold text-text-primary">
+              {settings.fontSize}px
+            </span>
           </div>
         </Field>
 
@@ -591,9 +595,7 @@ export function SettingsPage() {
             max={300}
             step={10}
             value={settings.autoSaveInterval}
-            onChange={(e) =>
-              void settings.set("autoSaveInterval", parseInt(e.target.value, 10))
-            }
+            onChange={(e) => void settings.set("autoSaveInterval", parseInt(e.target.value, 10))}
             className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
         </Field>
@@ -628,10 +630,7 @@ export function SettingsPage() {
           />
         </Field>
 
-        <Field
-          label="Sync Interval (seconds)"
-          description="Frequency of database sync sweeps."
-        >
+        <Field label="Sync Interval (seconds)" description="Frequency of database sync sweeps.">
           <input
             id="input-team-sync-interval"
             type="number"
@@ -639,9 +638,7 @@ export function SettingsPage() {
             max={3600}
             step={10}
             value={settings.teamSyncInterval}
-            onChange={(e) =>
-              void settings.set("teamSyncInterval", parseInt(e.target.value, 10))
-            }
+            onChange={(e) => void settings.set("teamSyncInterval", parseInt(e.target.value, 10))}
             disabled={!settings.teamSyncEnabled}
             className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
@@ -708,7 +705,9 @@ export function SettingsPage() {
               </div>
               <div className="flex justify-between">
                 <span>WAL mode</span>
-                <span className="text-text-primary font-semibold">{dbStatus.walMode ? "on" : "off"}</span>
+                <span className="text-text-primary font-semibold">
+                  {dbStatus.walMode ? "on" : "off"}
+                </span>
               </div>
               <div className="flex flex-wrap justify-between gap-1">
                 <span>Data directory</span>

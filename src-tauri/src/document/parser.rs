@@ -97,8 +97,8 @@ impl<'a> DocumentParser<'a> {
             ));
         }
 
-        let response: PyParseResponse = serde_json::from_str(response_line.trim())
-            .map_err(|e| {
+        let response: PyParseResponse =
+            serde_json::from_str(response_line.trim()).map_err(|e| {
                 AppError::Other(format!(
                     "Failed to deserialise parser.py response: {} — raw: {}",
                     e,

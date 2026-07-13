@@ -10,9 +10,10 @@ export function formatChatForExport(session: ChatSession, messages: ChatMessage[
   content += `\n---\n\n`;
 
   for (const msg of messages) {
-    const roleName = msg.role === "user" ? "You" : msg.role === "assistant" ? "Assistant" : "System";
+    const roleName =
+      msg.role === "user" ? "You" : msg.role === "assistant" ? "Assistant" : "System";
     const timestamp = new Date(msg.createdAt).toLocaleString();
-    
+
     content += `### ${roleName} (${timestamp})\n\n`;
     content += `${msg.content}\n\n`;
   }
@@ -23,13 +24,13 @@ export function formatChatForExport(session: ChatSession, messages: ChatMessage[
 export function downloadStringAsFile(content: string, filename: string) {
   const blob = new Blob([content], { type: "text/markdown;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement("a");
   link.href = url;
   link.setAttribute("download", filename);
   document.body.appendChild(link);
   link.click();
-  
+
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }

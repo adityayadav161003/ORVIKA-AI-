@@ -263,7 +263,11 @@ pub fn import_custom_gguf(
     let custom_id = format!("custom-{}", uuid::Uuid::new_v4().to_string());
     let model = DownloadedModel {
         id: custom_id,
-        model_name: if model_name.trim().is_empty() { filename.replace(".gguf", "") } else { model_name.trim().to_string() },
+        model_name: if model_name.trim().is_empty() {
+            filename.replace(".gguf", "")
+        } else {
+            model_name.trim().to_string()
+        },
         model_path: dest_path.to_string_lossy().to_string(),
         file_size,
         checksum_sha256: "custom-import".to_string(),

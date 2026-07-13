@@ -35,11 +35,19 @@ function MarkdownContent({ content }: { content: string }) {
                   children={String(children).replace(/\n$/, "")}
                   language={match[1]}
                   style={vscDarkPlus}
-                  customStyle={{ margin: 0, padding: "0.75rem", background: "#1e1e1c", fontSize: "0.75rem" }}
+                  customStyle={{
+                    margin: 0,
+                    padding: "0.75rem",
+                    background: "#1e1e1c",
+                    fontSize: "0.75rem",
+                  }}
                 />
               </div>
             ) : (
-              <code {...rest} className={cn("rounded bg-surface px-1.5 py-0.5 font-mono text-[0.9em]", className)}>
+              <code
+                {...rest}
+                className={cn("rounded bg-surface px-1.5 py-0.5 font-mono text-[0.9em]", className)}
+              >
                 {children}
               </code>
             );
@@ -63,33 +71,36 @@ function parseThinkBlock(content: string): { think: string | null; response: str
   if (thinkStart === -1) {
     return { think: null, response: content };
   }
-  
+
   const thinkEnd = content.indexOf("</think>");
   if (thinkEnd === -1) {
     return {
       think: content.substring(thinkStart + 7).trim(),
-      response: content.substring(0, thinkStart).trim()
+      response: content.substring(0, thinkStart).trim(),
     };
   }
-  
+
   return {
     think: content.substring(thinkStart + 7, thinkEnd).trim(),
-    response: (content.substring(0, thinkStart) + content.substring(thinkEnd + 8)).trim()
+    response: (content.substring(0, thinkStart) + content.substring(thinkEnd + 8)).trim(),
   };
 }
 
-function ThinkCollapsible({ content, streaming }: { content: string, streaming: boolean }) {
+function ThinkCollapsible({ content, streaming }: { content: string; streaming: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="mb-4 overflow-hidden rounded-md border border-border/60 bg-surface/30">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center gap-2 px-3 py-2.5 text-xs font-semibold text-text-muted hover:bg-surface/50 hover:text-text-primary transition-colors"
       >
         <svg
           className={cn("h-3.5 w-3.5 transition-transform", isOpen ? "rotate-90" : "")}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
@@ -103,7 +114,6 @@ function ThinkCollapsible({ content, streaming }: { content: string, streaming: 
     </div>
   );
 }
-
 
 export function MessageBubble({ message, streaming = false }: MessageBubbleProps) {
   const isUser = message.role === "user";
@@ -182,9 +192,28 @@ export function MessageBubble({ message, streaming = false }: MessageBubbleProps
                       className="inline-flex items-center gap-1.5 rounded-md bg-surface px-2 py-1 text-[10px] font-medium text-text-muted border border-border/60"
                       title={source}
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-70">
-                        <path d="M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M13 2V9H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="opacity-70"
+                      >
+                        <path
+                          d="M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M13 2V9H20"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       <span className="max-w-[120px] truncate">{source}</span>
                     </div>

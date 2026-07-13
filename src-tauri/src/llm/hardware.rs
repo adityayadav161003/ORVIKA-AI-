@@ -6,7 +6,11 @@ use crate::utils::error::{AppError, AppResult};
 fn detect_cpu_info() -> (String, u32, u32, f64) {
     if cfg!(target_os = "windows") {
         let name_out = Command::new("powershell")
-            .args(["-NoProfile", "-Command", "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name"])
+            .args([
+                "-NoProfile",
+                "-Command",
+                "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name",
+            ])
             .output();
         let cpu_brand = name_out
             .ok()
@@ -14,11 +18,20 @@ fn detect_cpu_info() -> (String, u32, u32, f64) {
             .unwrap_or_else(|| "Unknown CPU".to_string());
 
         let cores_out = Command::new("powershell")
-            .args(["-NoProfile", "-Command", "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty NumberOfCores"])
+            .args([
+                "-NoProfile",
+                "-Command",
+                "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty NumberOfCores",
+            ])
             .output();
         let physical_cores = cores_out
             .ok()
-            .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<u32>().ok())
+            .and_then(|o| {
+                String::from_utf8_lossy(&o.stdout)
+                    .trim()
+                    .parse::<u32>()
+                    .ok()
+            })
             .unwrap_or(4);
 
         let logical_out = Command::new("powershell")
@@ -26,7 +39,12 @@ fn detect_cpu_info() -> (String, u32, u32, f64) {
             .output();
         let logical_cores = logical_out
             .ok()
-            .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<u32>().ok())
+            .and_then(|o| {
+                String::from_utf8_lossy(&o.stdout)
+                    .trim()
+                    .parse::<u32>()
+                    .ok()
+            })
             .unwrap_or(8);
 
         let mem_out = Command::new("powershell")
@@ -34,7 +52,12 @@ fn detect_cpu_info() -> (String, u32, u32, f64) {
             .output();
         let total_memory_gb = mem_out
             .ok()
-            .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<f64>().ok())
+            .and_then(|o| {
+                String::from_utf8_lossy(&o.stdout)
+                    .trim()
+                    .parse::<f64>()
+                    .ok()
+            })
             .map(|bytes| bytes / (1024.0 * 1024.0 * 1024.0))
             .unwrap_or(16.0);
 
@@ -71,7 +94,6 @@ pub fn detect_hardware() -> HardwareInfo {
         has_nvidia_gpu: false,
     }
 }
-
 
 fn detect_nvidia_gpu() -> Option<HardwareInfo> {
     let output = Command::new("nvidia-smi")
@@ -129,7 +151,6 @@ fn detect_nvidia_gpu() -> Option<HardwareInfo> {
         has_nvidia_gpu: true,
     })
 }
-
 
 pub fn gpu_layers_flag(hardware: &HardwareInfo) -> Vec<String> {
     if hardware.gpu_available && hardware.recommended_gpu_layers > 0 {

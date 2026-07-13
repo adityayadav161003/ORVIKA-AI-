@@ -55,12 +55,22 @@ export function MediaPage() {
     try {
       setIsLoadingList(true);
       const docs = await invoke<Document[]>("list_documents", { sessionId: null });
-      
+
       // Filter for media documents based on extension or parsed metadata
       const filtered = docs.filter((doc) => {
         const ext = doc.fileType.toLowerCase();
-        const isMediaExt = ["mp4", "mkv", "avi", "webm", "mp3", "wav", "m4a", "flac", "ogg"].includes(ext);
-        
+        const isMediaExt = [
+          "mp4",
+          "mkv",
+          "avi",
+          "webm",
+          "mp3",
+          "wav",
+          "m4a",
+          "flac",
+          "ogg",
+        ].includes(ext);
+
         let isMediaMeta = false;
         if (doc.metadata) {
           try {
@@ -87,7 +97,7 @@ export function MediaPage() {
 
   // Poll list if there are transcribing items
   useEffect(() => {
-    const hasTranscribing = mediaList.some(doc => !doc.parsedAt);
+    const hasTranscribing = mediaList.some((doc) => !doc.parsedAt);
     if (!hasTranscribing) return;
 
     const interval = setInterval(() => {
@@ -113,7 +123,7 @@ export function MediaPage() {
         const segments = await invoke<FrontEndSegment[]>("get_media_transcript", {
           documentId: activeMedia.id,
         });
-        
+
         // Sort segments chronologically
         segments.sort((a, b) => a.start - b.start);
         setTranscript(segments);
@@ -134,19 +144,21 @@ export function MediaPage() {
     try {
       const selected = await open({
         multiple: false,
-        filters: [{
-          name: 'Media Files',
-          extensions: ["mp4", "mkv", "avi", "webm", "mp3", "wav", "m4a", "flac", "ogg"]
-        }]
+        filters: [
+          {
+            name: "Media Files",
+            extensions: ["mp4", "mkv", "avi", "webm", "mp3", "wav", "m4a", "flac", "ogg"],
+          },
+        ],
       });
 
       if (!selected) return;
 
       const filePath = Array.isArray(selected) ? selected[0] : selected;
-      
+
       setIsUploading(true);
       setError(null);
-      
+
       const doc = await invoke<Document>("upload_document", {
         filePath: filePath,
         sessionId: null,
@@ -208,7 +220,7 @@ export function MediaPage() {
     try {
       setIsSummarizing(true);
       setSummaryText("");
-      
+
       const channel = new Channel<string>();
       channel.onmessage = (token) => {
         setSummaryText((prev) => prev + token);
@@ -231,20 +243,20 @@ export function MediaPage() {
     const textContent = transcript
       .map((s) => `[${formatTime(s.start)} - ${formatTime(s.end)}] ${s.text}`)
       .join("\n");
-    
+
     downloadFile(textContent, `${activeMedia?.filename || "transcript"}.txt`, "text/plain");
   };
 
   const handleExportSRT = () => {
     if (transcript.length === 0) return;
-    
+
     const formatSrtTime = (seconds: number) => {
       const pad = (num: number, len = 2) => String(num).padStart(len, "0");
       const hrs = Math.floor(seconds / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
       const secs = Math.floor(seconds % 60);
       const ms = Math.floor((seconds % 1) * 1000);
-      
+
       return `${pad(hrs)}:${pad(mins)}:${pad(secs)},${pad(ms, 3)}`;
     };
 
@@ -267,28 +279,36 @@ export function MediaPage() {
   };
 
   const filteredTranscript = transcript.filter((s) =>
-    s.text.toLowerCase().includes(searchQuery.toLowerCase())
+    s.text.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Active segment detection
   const activeSegmentIndex = transcript.findIndex(
-    (s) => currentTime >= s.start && currentTime <= s.end
+    (s) => currentTime >= s.start && currentTime <= s.end,
   );
 
   return (
     <div className="flex flex-col h-full overflow-y-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <h2 className="font-serif text-3xl font-bold text-text-primary">Media Intelligence Center</h2>
+        <h2 className="font-serif text-3xl font-bold text-text-primary">
+          Media Intelligence Center
+        </h2>
         <p className="text-text-secondary max-w-2xl">
-          Process, transcribe, and query your local video and audio recordings locally. Outbound transcription queries never touch the internet.
+          Process, transcribe, and query your local video and audio recordings locally. Outbound
+          transcription queries never touch the internet.
         </p>
       </div>
 
       {error && (
         <div className="text-sm text-red-500 bg-red-500/10 px-4 py-3 rounded-md border border-red-500/20 relative">
           <span className="font-semibold">Error: </span> {error}
-          <button onClick={() => setError(null)} className="absolute top-2 right-3 text-lg font-bold hover:text-red-700">×</button>
+          <button
+            onClick={() => setError(null)}
+            className="absolute top-2 right-3 text-lg font-bold hover:text-red-700"
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -313,7 +333,7 @@ export function MediaPage() {
             <h3 className="font-medium text-text-primary border-b border-border pb-1.5 text-sm uppercase tracking-wider">
               Local Media Files
             </h3>
-            
+
             {isLoadingList ? (
               <div className="text-xs text-text-muted flex items-center gap-2">
                 <Spinner /> Loading files...
@@ -325,7 +345,7 @@ export function MediaPage() {
                 {mediaList.map((media) => {
                   const isActive = activeMedia?.id === media.id;
                   const isProcessing = !media.parsedAt;
-                  
+
                   return (
                     <div
                       key={media.id}
@@ -337,7 +357,10 @@ export function MediaPage() {
                       } ${isProcessing ? "opacity-75 cursor-not-allowed" : ""}`}
                     >
                       <div className="flex items-center justify-between mb-1.5 pr-6">
-                        <h4 className="font-medium text-xs truncate max-w-[85%] font-mono" title={media.filename}>
+                        <h4
+                          className="font-medium text-xs truncate max-w-[85%] font-mono"
+                          title={media.filename}
+                        >
                           {media.filename}
                         </h4>
                         <button
@@ -353,7 +376,10 @@ export function MediaPage() {
                       </div>
 
                       <div className="flex justify-between items-center text-[10px] text-text-muted font-mono">
-                        <span>{media.fileType.toUpperCase()} • {(media.fileSize / 1024 / 1024).toFixed(1)} MB</span>
+                        <span>
+                          {media.fileType.toUpperCase()} •{" "}
+                          {(media.fileSize / 1024 / 1024).toFixed(1)} MB
+                        </span>
                         {isProcessing ? (
                           <span className="text-accent animate-pulse">Transcribing...</span>
                         ) : (
@@ -417,7 +443,9 @@ export function MediaPage() {
                 {activeMedia.parsedAt && (
                   <div className="bg-white border border-border rounded-lg p-5 shadow-sm space-y-4">
                     <div className="flex items-center justify-between border-b border-border pb-3">
-                      <h3 className="font-serif text-lg font-bold text-text-primary">Meeting Summarizer</h3>
+                      <h3 className="font-serif text-lg font-bold text-text-primary">
+                        Meeting Summarizer
+                      </h3>
                       <div className="flex items-center gap-2">
                         <Select
                           value={summaryDetail}
@@ -429,11 +457,7 @@ export function MediaPage() {
                           ]}
                           className="text-xs py-1"
                         />
-                        <Button
-                          onClick={handleGenerateSummary}
-                          loading={isSummarizing}
-                          size="sm"
-                        >
+                        <Button onClick={handleGenerateSummary} loading={isSummarizing} size="sm">
                           Generate
                         </Button>
                       </div>
@@ -460,7 +484,9 @@ export function MediaPage() {
                   {/* Sync Header */}
                   <div className="flex flex-col gap-3 pb-3 border-b border-border mb-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-serif text-base font-bold text-text-primary">Transcript</h3>
+                      <h3 className="font-serif text-base font-bold text-text-primary">
+                        Transcript
+                      </h3>
                       <div className="flex gap-1.5">
                         <Button
                           onClick={handleExportText}
@@ -501,13 +527,15 @@ export function MediaPage() {
                       </div>
                     ) : filteredTranscript.length === 0 ? (
                       <div className="text-xs text-text-muted italic text-center py-8">
-                        {searchQuery ? "No matches found for search query." : "No transcript segments found."}
+                        {searchQuery
+                          ? "No matches found for search query."
+                          : "No transcript segments found."}
                       </div>
                     ) : (
                       filteredTranscript.map((segment, index) => {
                         const originalIndex = transcript.indexOf(segment);
                         const isActive = originalIndex === activeSegmentIndex;
-                        
+
                         return (
                           <div
                             key={index}
@@ -535,9 +563,12 @@ export function MediaPage() {
           ) : (
             <div className="lg:col-span-12 border border-dashed border-border rounded-lg bg-surface/20 flex flex-col items-center justify-center py-20 text-center text-text-muted">
               <span className="text-5xl mb-4 animate-bounce">🎬</span>
-              <p className="font-serif text-lg font-semibold text-text-primary">No Media File Loaded</p>
+              <p className="font-serif text-lg font-semibold text-text-primary">
+                No Media File Loaded
+              </p>
               <p className="text-sm text-text-secondary max-w-sm mt-1">
-                Select an processed file from the library sidebar or upload a new recording to begin analysis.
+                Select an processed file from the library sidebar or upload a new recording to begin
+                analysis.
               </p>
             </div>
           )}

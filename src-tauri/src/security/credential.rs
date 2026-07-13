@@ -1,5 +1,5 @@
 #[cfg(target_os = "windows")]
-use wincredentials::{read_credential, write_credential, credential::Credential};
+use wincredentials::{credential::Credential, read_credential, write_credential};
 
 use crate::utils::error::{AppError, AppResult};
 
@@ -15,10 +15,7 @@ fn decode_hex(s: &str) -> Result<Vec<u8>, String> {
     }
     (0..s.len())
         .step_by(2)
-        .map(|i| {
-            u8::from_str_radix(&s[i..i + 2], 16)
-                .map_err(|e| e.to_string())
-        })
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16).map_err(|e| e.to_string()))
         .collect()
 }
 
@@ -27,8 +24,9 @@ fn decode_hex(s: &str) -> Result<Vec<u8>, String> {
 pub fn get_or_create_master_key() -> AppResult<Vec<u8>> {
     let name = "OrvikaAI/MasterKey";
     if let Ok(cred) = read_credential(name) {
-        let key_bytes = decode_hex(&cred.secret)
-            .map_err(|e| AppError::Encryption(format!("Failed to decode master key hex: {:?}", e)))?;
+        let key_bytes = decode_hex(&cred.secret).map_err(|e| {
+            AppError::Encryption(format!("Failed to decode master key hex: {:?}", e))
+        })?;
         Ok(key_bytes)
     } else {
         // Generate a new 32-byte key
@@ -42,8 +40,12 @@ pub fn get_or_create_master_key() -> AppResult<Vec<u8>> {
             secret: secret_hex,
         };
 
-        write_credential(name, cred)
-            .map_err(|e| AppError::Encryption(format!("Failed to write master key to Windows Credential Manager: {:?}", e)))?;
+        write_credential(name, cred).map_err(|e| {
+            AppError::Encryption(format!(
+                "Failed to write master key to Windows Credential Manager: {:?}",
+                e
+            ))
+        })?;
         Ok(key)
     }
 }
@@ -52,5 +54,7 @@ pub fn get_or_create_master_key() -> AppResult<Vec<u8>> {
 #[cfg(not(target_os = "windows"))]
 pub fn get_or_create_master_key() -> AppResult<Vec<u8>> {
     tracing::warn!("Windows Credential Manager is not supported on this platform.");
-    Err(AppError::Encryption("Windows Credential Manager not supported".into()))
+    Err(AppError::Encryption(
+        "Windows Credential Manager not supported".into(),
+    ))
 }

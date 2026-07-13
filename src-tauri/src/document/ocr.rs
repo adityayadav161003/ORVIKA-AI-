@@ -67,20 +67,15 @@ impl<'a> OcrProcessor<'a> {
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
             .spawn()
-            .map_err(|e| {
-                AppError::Other(format!("Failed to spawn ocr_parser.py: {}", e))
-            })?;
+            .map_err(|e| AppError::Other(format!("Failed to spawn ocr_parser.py: {}", e)))?;
 
-        let request =
-            serde_json::json!({ "file_path": file_path.to_string_lossy() });
+        let request = serde_json::json!({ "file_path": file_path.to_string_lossy() });
         let request_line = serde_json::to_string(&request).unwrap() + "\n";
 
         if let Some(mut stdin) = child.stdin.take() {
-            stdin
-                .write_all(request_line.as_bytes())
-                .map_err(|e| {
-                    AppError::Other(format!("Failed to write to ocr_parser stdin: {}", e))
-                })?;
+            stdin.write_all(request_line.as_bytes()).map_err(|e| {
+                AppError::Other(format!("Failed to write to ocr_parser stdin: {}", e))
+            })?;
         }
 
         let stdout = child.stdout.take().expect("stdout should be piped");
@@ -88,9 +83,7 @@ impl<'a> OcrProcessor<'a> {
         let mut response_line = String::new();
         reader
             .read_line(&mut response_line)
-            .map_err(|e| {
-                AppError::Other(format!("Failed to read ocr_parser stdout: {}", e))
-            })?;
+            .map_err(|e| AppError::Other(format!("Failed to read ocr_parser stdout: {}", e)))?;
 
         let _ = child.wait();
 
@@ -100,13 +93,12 @@ impl<'a> OcrProcessor<'a> {
             ));
         }
 
-        let response: OcrResponse = serde_json::from_str(response_line.trim())
-            .map_err(|e| {
-                AppError::Other(format!(
-                    "Failed to deserialise ocr_parser.py response: {}",
-                    e
-                ))
-            })?;
+        let response: OcrResponse = serde_json::from_str(response_line.trim()).map_err(|e| {
+            AppError::Other(format!(
+                "Failed to deserialise ocr_parser.py response: {}",
+                e
+            ))
+        })?;
 
         if response.status != "success" {
             return Err(AppError::Other(format!(
@@ -152,8 +144,7 @@ impl<'a> OcrProcessor<'a> {
                 // Flush current page
                 let text = current_page_text.join("\n").trim().to_owned();
                 if !text.is_empty() {
-                    let confidence =
-                        confidences.get((current_page as usize) - 1).copied();
+                    let confidence = confidences.get((current_page as usize) - 1).copied();
                     blocks.push(ParsedBlock {
                         heading_path: vec![],
                         page_number: Some(current_page),

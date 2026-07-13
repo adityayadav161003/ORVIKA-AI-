@@ -126,7 +126,11 @@ pub fn rename(conn: &Connection, session_id: &str, name: &str) -> AppResult<Sess
     get(conn, session_id)?.ok_or_else(|| AppError::Other("Session not found".to_string()))
 }
 
-pub fn update_system_prompt(conn: &Connection, session_id: &str, prompt: Option<&str>) -> AppResult<()> {
+pub fn update_system_prompt(
+    conn: &Connection,
+    session_id: &str,
+    prompt: Option<&str>,
+) -> AppResult<()> {
     let updated = conn.execute(
         "UPDATE sessions
          SET system_prompt = ?1, updated_at = datetime('now')

@@ -97,11 +97,7 @@ pub fn list(conn: &Connection, session_id: Option<&str>) -> AppResult<Vec<Docume
     Ok(docs)
 }
 
-pub fn update_parsed_status(
-    conn: &Connection,
-    id: &str,
-    chunk_count: u32,
-) -> AppResult<()> {
+pub fn update_parsed_status(conn: &Connection, id: &str, chunk_count: u32) -> AppResult<()> {
     conn.execute(
         "UPDATE documents SET chunk_count = ?1, parsed_at = datetime('now') WHERE id = ?2",
         params![chunk_count, id],

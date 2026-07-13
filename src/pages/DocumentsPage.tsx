@@ -34,13 +34,20 @@ export function DocumentsPage() {
   };
 
   const handleRebuildIndex = async () => {
-    if (!confirm("Are you sure you want to rebuild the vector database index? This will re-embed all documents and may take some time.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to rebuild the vector database index? This will re-embed all documents and may take some time.",
+      )
+    )
+      return;
     try {
       setIsRebuilding(true);
       await invoke("rebuild_vector_store");
       alert("Vector database index has been successfully rebuilt!");
     } catch (err) {
-      alert("Failed to rebuild vector index: " + (err instanceof Error ? err.message : String(err)));
+      alert(
+        "Failed to rebuild vector index: " + (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setIsRebuilding(false);
     }
@@ -65,7 +72,8 @@ export function DocumentsPage() {
       <div className="flex flex-col gap-2">
         <h2 className="font-serif text-3xl font-bold text-text-primary">Document Library</h2>
         <p className="text-text-secondary max-w-2xl">
-          Upload documents to be parsed and chunked locally. These documents can be used in your research sessions and chats for Retrieval-Augmented Generation (RAG).
+          Upload documents to be parsed and chunked locally. These documents can be used in your
+          research sessions and chats for Retrieval-Augmented Generation (RAG).
         </p>
       </div>
 
@@ -75,9 +83,7 @@ export function DocumentsPage() {
 
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-2">
-          <h3 className="font-medium text-lg text-text-primary">
-            Your Documents
-          </h3>
+          <h3 className="font-medium text-lg text-text-primary">Your Documents</h3>
           <Button
             size="sm"
             variant="secondary"
@@ -89,7 +95,7 @@ export function DocumentsPage() {
             Rebuild Index
           </Button>
         </div>
-        
+
         {isLoading ? (
           <div className="text-text-muted">Loading documents...</div>
         ) : documents.length === 0 ? (
@@ -97,8 +103,8 @@ export function DocumentsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {documents.map((doc) => (
-              <div 
-                key={doc.id} 
+              <div
+                key={doc.id}
                 className="flex flex-col p-4 border border-border rounded-lg bg-surface relative group cursor-pointer hover:border-accent/50 hover:shadow-md transition-all"
                 onClick={() => setSelectedDocument(doc)}
               >
@@ -106,7 +112,7 @@ export function DocumentsPage() {
                   <h4 className="font-medium text-text-primary truncate pr-4" title={doc.filename}>
                     {doc.filename}
                   </h4>
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDelete(doc.id);
@@ -117,11 +123,11 @@ export function DocumentsPage() {
                     ×
                   </button>
                 </div>
-                
+
                 <div className="text-xs text-text-secondary space-y-1">
                   <p>Type: {doc.fileType.toUpperCase()}</p>
                   <p>Size: {(doc.fileSize / 1024 / 1024).toFixed(2)} MB</p>
-                  <p>Status: {doc.parsedAt ? `Parsed (${doc.chunkCount} chunks)` : 'Parsing...'}</p>
+                  <p>Status: {doc.parsedAt ? `Parsed (${doc.chunkCount} chunks)` : "Parsing..."}</p>
                   <p>Uploaded: {new Date(doc.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
@@ -131,10 +137,7 @@ export function DocumentsPage() {
       </div>
 
       {selectedDocument && (
-        <DocumentViewer 
-          document={selectedDocument} 
-          onClose={() => setSelectedDocument(null)} 
-        />
+        <DocumentViewer document={selectedDocument} onClose={() => setSelectedDocument(null)} />
       )}
     </div>
   );

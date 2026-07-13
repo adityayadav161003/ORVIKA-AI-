@@ -42,7 +42,7 @@ interface ComplianceReport {
 
 export function TransparencyPage() {
   const [activeTab, setActiveTab] = useState<"logs" | "compliance" | "settings">("logs");
-  
+
   // Logs Tab
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [stats, setStats] = useState<AuditStats>({
@@ -50,10 +50,10 @@ export function TransparencyPage() {
     blockedRequests: 0,
     piiDetected: 0,
     healthScore: 100,
-    riskBreakdown: { low: 0, medium: 0, high: 0 }
+    riskBreakdown: { low: 0, medium: 0, high: 0 },
   });
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
-  
+
   // Filters
   const [filterType, setFilterType] = useState<string>("");
   const [filterStartDate, setFilterStartDate] = useState<string>("");
@@ -86,15 +86,20 @@ export function TransparencyPage() {
       setLogs(dbLogs);
 
       // Load Settings
-      const limit = await invoke<string | null>("get_setting", { key: "security.api_spending_limit" });
+      const limit = await invoke<string | null>("get_setting", {
+        key: "security.api_spending_limit",
+      });
       if (limit) setSpendingLimit(limit);
 
-      const current = await invoke<string | null>("get_setting", { key: "security.api_spending_current" });
+      const current = await invoke<string | null>("get_setting", {
+        key: "security.api_spending_current",
+      });
       if (current) setCurrentSpending(current);
 
-      const threshold = await invoke<string | null>("get_setting", { key: "security.auto_approve_threshold" });
+      const threshold = await invoke<string | null>("get_setting", {
+        key: "security.auto_approve_threshold",
+      });
       if (threshold) setAutoApproveThreshold(threshold);
-
     } catch (err) {
       console.error("Error loading transparency data:", err);
     }
@@ -136,7 +141,10 @@ export function TransparencyPage() {
     setSettingsFeedback(null);
     try {
       await invoke("set_setting", { key: "security.api_spending_limit", value: spendingLimit });
-      await invoke("set_setting", { key: "security.auto_approve_threshold", value: autoApproveThreshold });
+      await invoke("set_setting", {
+        key: "security.auto_approve_threshold",
+        value: autoApproveThreshold,
+      });
       setSettingsFeedback("Settings saved successfully.");
       setTimeout(() => setSettingsFeedback(null), 3000);
       await loadData();
@@ -160,7 +168,7 @@ export function TransparencyPage() {
   const downloadReportFile = () => {
     if (!complianceReport) return;
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-      JSON.stringify(complianceReport, null, 2)
+      JSON.stringify(complianceReport, null, 2),
     )}`;
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", jsonString);
@@ -171,7 +179,7 @@ export function TransparencyPage() {
   };
 
   // Filter logs locally by search text
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = logs.filter((log) => {
     if (!searchText) return true;
     const query = searchText.toLowerCase();
     return (
@@ -187,7 +195,9 @@ export function TransparencyPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-text-primary">🛡 Privacy & Transparency</h1>
+          <h1 className="font-serif text-3xl font-bold text-text-primary">
+            🛡 Privacy & Transparency
+          </h1>
           <p className="text-sm text-text-secondary">
             Audit logs of outbound traffic, compliance posture reports, and privacy policies.
           </p>
@@ -196,7 +206,9 @@ export function TransparencyPage() {
           <button
             onClick={() => setActiveTab("logs")}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-              activeTab === "logs" ? "bg-accent text-white" : "bg-surface hover:bg-border text-text-primary"
+              activeTab === "logs"
+                ? "bg-accent text-white"
+                : "bg-surface hover:bg-border text-text-primary"
             }`}
           >
             Outbound Logs
@@ -204,7 +216,9 @@ export function TransparencyPage() {
           <button
             onClick={() => setActiveTab("compliance")}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-              activeTab === "compliance" ? "bg-accent text-white" : "bg-surface hover:bg-border text-text-primary"
+              activeTab === "compliance"
+                ? "bg-accent text-white"
+                : "bg-surface hover:bg-border text-text-primary"
             }`}
           >
             Compliance Reports
@@ -212,7 +226,9 @@ export function TransparencyPage() {
           <button
             onClick={() => setActiveTab("settings")}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-              activeTab === "settings" ? "bg-accent text-white" : "bg-surface hover:bg-border text-text-primary"
+              activeTab === "settings"
+                ? "bg-accent text-white"
+                : "bg-surface hover:bg-border text-text-primary"
             }`}
           >
             Settings
@@ -225,22 +241,28 @@ export function TransparencyPage() {
           {/* Stats Bar */}
           <div className="grid grid-cols-4 gap-4">
             <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
-              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">Privacy Health</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">
+                Privacy Health
+              </span>
               <div className="mt-2 flex items-center gap-3">
                 <span
                   className={`flex h-10 w-10 items-center justify-center rounded-full font-bold text-white text-sm ${
                     stats.healthScore >= 90
                       ? "bg-emerald-500"
                       : stats.healthScore >= 70
-                      ? "bg-amber-500"
-                      : "bg-red-500"
+                        ? "bg-amber-500"
+                        : "bg-red-500"
                   }`}
                 >
                   {stats.healthScore}%
                 </span>
                 <div>
                   <div className="text-sm font-semibold text-text-primary">
-                    {stats.healthScore >= 90 ? "Excellent" : stats.healthScore >= 70 ? "Needs Review" : "At Risk"}
+                    {stats.healthScore >= 90
+                      ? "Excellent"
+                      : stats.healthScore >= 70
+                        ? "Needs Review"
+                        : "At Risk"}
                   </div>
                   <div className="text-xs text-text-muted">Zero unauthorized egress</div>
                 </div>
@@ -248,7 +270,9 @@ export function TransparencyPage() {
             </div>
 
             <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
-              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">Outbound Queries</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">
+                Outbound Queries
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-text-primary">{stats.totalRequests}</span>
                 <span className="text-xs text-text-muted">calls logged</span>
@@ -256,7 +280,9 @@ export function TransparencyPage() {
             </div>
 
             <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
-              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">Redacted PII Incidents</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">
+                Redacted PII Incidents
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-amber-500">{stats.piiDetected}</span>
                 <span className="text-xs text-text-muted">redacted</span>
@@ -264,7 +290,9 @@ export function TransparencyPage() {
             </div>
 
             <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
-              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">Blocked Leak Attempts</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-text-muted">
+                Blocked Leak Attempts
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-red-500">{stats.blockedRequests}</span>
                 <span className="text-xs text-text-muted">halted</span>
@@ -278,12 +306,12 @@ export function TransparencyPage() {
               <Input
                 placeholder="Search logs..."
                 value={searchText}
-                onChange={e => setSearchText(e.target.value)}
+                onChange={(e) => setSearchText(e.target.value)}
               />
             </div>
             <select
               value={filterType}
-              onChange={e => setFilterType(e.target.value)}
+              onChange={(e) => setFilterType(e.target.value)}
               className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text-primary focus:outline-none"
             >
               <option value="">All Events</option>
@@ -296,19 +324,24 @@ export function TransparencyPage() {
               <input
                 type="date"
                 value={filterStartDate}
-                onChange={e => setFilterStartDate(e.target.value)}
+                onChange={(e) => setFilterStartDate(e.target.value)}
                 className="h-10 rounded-md border border-border bg-white px-3 text-sm focus:outline-none"
               />
               <span className="text-xs text-text-muted">To:</span>
               <input
                 type="date"
                 value={filterEndDate}
-                onChange={e => setFilterEndDate(e.target.value)}
+                onChange={(e) => setFilterEndDate(e.target.value)}
                 className="h-10 rounded-md border border-border bg-white px-3 text-sm focus:outline-none"
               />
             </div>
             <div className="ml-auto flex gap-2">
-              <Button size="sm" variant="secondary" onClick={handleClearLogs} className="text-red-500 hover:bg-red-50">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleClearLogs}
+                className="text-red-500 hover:bg-red-50"
+              >
                 Clear Logs
               </Button>
             </div>
@@ -335,7 +368,7 @@ export function TransparencyPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map(log => (
+                  filteredLogs.map((log) => (
                     <tr key={log.id} className="hover:bg-surface/50">
                       <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-text-muted">
                         {log.timestamp}
@@ -346,15 +379,15 @@ export function TransparencyPage() {
                             log.eventType === "blocked"
                               ? "bg-red-50 text-red-700"
                               : log.eventType === "pii_detected"
-                              ? "bg-amber-50 text-amber-700"
-                              : "bg-blue-55 text-blue-700"
+                                ? "bg-amber-50 text-amber-700"
+                                : "bg-blue-55 text-blue-700"
                           }`}
                         >
                           {log.eventType === "blocked"
                             ? "Leak Blocked"
                             : log.eventType === "pii_detected"
-                            ? "PII Redacted"
-                            : "Cloud Call"}
+                              ? "PII Redacted"
+                              : "Cloud Call"}
                         </span>
                       </td>
                       <td className="px-6 py-4 font-mono text-xs text-text-primary">
@@ -366,14 +399,16 @@ export function TransparencyPage() {
                             log.riskLevel === "high"
                               ? "bg-red-100 text-red-800"
                               : log.riskLevel === "medium"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-emerald-100 text-emerald-800"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-emerald-100 text-emerald-800"
                           }`}
                         >
                           {log.riskLevel ? log.riskLevel.toUpperCase() : "LOW"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-text-secondary truncate max-w-xs">{log.details}</td>
+                      <td className="px-6 py-4 text-text-secondary truncate max-w-xs">
+                        {log.details}
+                      </td>
                       <td className="whitespace-nowrap px-6 py-4 text-right">
                         <Button size="sm" variant="ghost" onClick={() => setSelectedLog(log)}>
                           Details
@@ -391,19 +426,30 @@ export function TransparencyPage() {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
               <div className="w-full max-w-2xl rounded-xl border border-border bg-white p-6 shadow-xl">
                 <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
-                  <h3 className="font-serif text-xl font-bold text-text-primary">Request Audit Details</h3>
-                  <button onClick={() => setSelectedLog(null)} className="text-text-muted hover:text-text-primary">
+                  <h3 className="font-serif text-xl font-bold text-text-primary">
+                    Request Audit Details
+                  </h3>
+                  <button
+                    onClick={() => setSelectedLog(null)}
+                    className="text-text-muted hover:text-text-primary"
+                  >
                     ✕
                   </button>
                 </div>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <span className="block text-xs font-mono text-text-muted uppercase">Timestamp</span>
-                      <span className="text-sm font-mono text-text-primary">{selectedLog.timestamp}</span>
+                      <span className="block text-xs font-mono text-text-muted uppercase">
+                        Timestamp
+                      </span>
+                      <span className="text-sm font-mono text-text-primary">
+                        {selectedLog.timestamp}
+                      </span>
                     </div>
                     <div>
-                      <span className="block text-xs font-mono text-text-muted uppercase">Destination</span>
+                      <span className="block text-xs font-mono text-text-muted uppercase">
+                        Destination
+                      </span>
                       <span className="text-sm font-mono text-text-primary">
                         {selectedLog.destination || "Local Execution"}
                       </span>
@@ -411,7 +457,9 @@ export function TransparencyPage() {
                   </div>
 
                   <div>
-                    <span className="block text-xs font-mono text-text-muted uppercase">System Details</span>
+                    <span className="block text-xs font-mono text-text-muted uppercase">
+                      System Details
+                    </span>
                     <p className="mt-1 text-sm text-text-primary bg-surface p-3 rounded border border-border">
                       {selectedLog.details}
                     </p>
@@ -419,7 +467,9 @@ export function TransparencyPage() {
 
                   {selectedLog.outboundContent && (
                     <div>
-                      <span className="block text-xs font-mono text-text-muted uppercase">Original Input</span>
+                      <span className="block text-xs font-mono text-text-muted uppercase">
+                        Original Input
+                      </span>
                       <pre className="mt-1 max-h-32 overflow-y-auto rounded border border-border bg-red-50/20 p-3 font-mono text-xs text-red-800">
                         {selectedLog.outboundContent}
                       </pre>
@@ -428,7 +478,9 @@ export function TransparencyPage() {
 
                   {selectedLog.sanitizationResult && (
                     <div>
-                      <span className="block text-xs font-mono text-text-muted uppercase">Sanitized / Egress Content</span>
+                      <span className="block text-xs font-mono text-text-muted uppercase">
+                        Sanitized / Egress Content
+                      </span>
                       <pre className="mt-1 max-h-32 overflow-y-auto rounded border border-border bg-emerald-50/20 p-3 font-mono text-xs text-emerald-800">
                         {selectedLog.sanitizationResult}
                       </pre>
@@ -437,7 +489,9 @@ export function TransparencyPage() {
 
                   {selectedLog.responseSummary && (
                     <div>
-                      <span className="block text-xs font-mono text-text-muted uppercase">Response Findings Summary</span>
+                      <span className="block text-xs font-mono text-text-muted uppercase">
+                        Response Findings Summary
+                      </span>
                       <pre className="mt-1 max-h-32 overflow-y-auto rounded border border-border bg-surface p-3 font-mono text-xs text-text-secondary">
                         {selectedLog.responseSummary}
                       </pre>
@@ -460,14 +514,18 @@ export function TransparencyPage() {
             <h3 className="mb-4 text-lg font-bold text-text-primary">Compliance Report Exporter</h3>
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex-1 min-w-[200px]">
-                <label className="mb-1.5 block text-xs font-medium text-text-secondary">Select Regulation Standard</label>
+                <label className="mb-1.5 block text-xs font-medium text-text-secondary">
+                  Select Regulation Standard
+                </label>
                 <select
                   value={regulation}
-                  onChange={e => setRegulation(e.target.value as "gdpr" | "hipaa" | "sox")}
+                  onChange={(e) => setRegulation(e.target.value as "gdpr" | "hipaa" | "sox")}
                   className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none"
                 >
                   <option value="gdpr">GDPR (General Data Protection Regulation)</option>
-                  <option value="hipaa">HIPAA (Health Insurance Portability & Accountability)</option>
+                  <option value="hipaa">
+                    HIPAA (Health Insurance Portability & Accountability)
+                  </option>
                   <option value="sox">SOX (Sarbanes-Oxley Act)</option>
                 </select>
               </div>
@@ -485,8 +543,12 @@ export function TransparencyPage() {
             <div className="rounded-xl border border-border bg-white p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between border-b border-border pb-4">
                 <div>
-                  <h2 className="text-xl font-bold text-text-primary">{complianceReport.regulation}</h2>
-                  <p className="text-xs text-text-muted">Generated on: {new Date().toLocaleString()}</p>
+                  <h2 className="text-xl font-bold text-text-primary">
+                    {complianceReport.regulation}
+                  </h2>
+                  <p className="text-xs text-text-muted">
+                    Generated on: {new Date().toLocaleString()}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="secondary" onClick={downloadReportFile}>
@@ -497,10 +559,15 @@ export function TransparencyPage() {
 
               {/* Status Checklist */}
               <div>
-                <h4 className="mb-3 font-mono text-xs uppercase tracking-wider text-accent">Audited Compliance Standards</h4>
+                <h4 className="mb-3 font-mono text-xs uppercase tracking-wider text-accent">
+                  Audited Compliance Standards
+                </h4>
                 <div className="space-y-3">
                   {complianceReport.principles?.map((p: CompliancePrinciple, idx: number) => (
-                    <div key={idx} className="flex items-start gap-3 rounded-lg border border-border/80 bg-surface p-4">
+                    <div
+                      key={idx}
+                      className="flex items-start gap-3 rounded-lg border border-border/80 bg-surface p-4"
+                    >
                       <span className="rounded-md bg-emerald-100 px-2 py-0.5 font-mono text-xs font-semibold text-emerald-800">
                         {p.status}
                       </span>
@@ -515,7 +582,9 @@ export function TransparencyPage() {
 
               {/* Summary Values */}
               <div>
-                <h4 className="mb-3 font-mono text-xs uppercase tracking-wider text-accent">Audit Metrics Data</h4>
+                <h4 className="mb-3 font-mono text-xs uppercase tracking-wider text-accent">
+                  Audit Metrics Data
+                </h4>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                   {Object.entries(complianceReport.summary || {}).map(([key, val]) => (
                     <div key={key} className="rounded-lg border border-border bg-surface p-4">
@@ -538,18 +607,19 @@ export function TransparencyPage() {
             <h3 className="text-lg font-bold text-text-primary">Policy & Egress Budget Settings</h3>
 
             {settingsFeedback && (
-              <div className="rounded bg-accent/10 p-3 text-sm text-accent">
-                {settingsFeedback}
-              </div>
+              <div className="rounded bg-accent/10 p-3 text-sm text-accent">{settingsFeedback}</div>
             )}
 
             <div className="space-y-4">
               {/* Spending Limit */}
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
                 <div>
-                  <h4 className="text-sm font-semibold text-text-primary">API Monthly Spending Limit ($)</h4>
+                  <h4 className="text-sm font-semibold text-text-primary">
+                    API Monthly Spending Limit ($)
+                  </h4>
                   <p className="text-xs text-text-muted">
-                    Set a hard cap limit for cloud intelligence queries. Calls will be blocked when exceeded.
+                    Set a hard cap limit for cloud intelligence queries. Calls will be blocked when
+                    exceeded.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -558,12 +628,19 @@ export function TransparencyPage() {
                     <Input
                       type="number"
                       value={spendingLimit}
-                      onChange={e => setSpendingLimit(e.target.value)}
+                      onChange={(e) => setSpendingLimit(e.target.value)}
                     />
                   </div>
                   <span className="text-xs text-text-muted">Spent:</span>
-                  <span className="font-mono text-sm font-semibold text-text-primary">${parseFloat(currentSpending).toFixed(3)}</span>
-                  <Button size="sm" variant="secondary" onClick={handleResetSpending} className="ml-2">
+                  <span className="font-mono text-sm font-semibold text-text-primary">
+                    ${parseFloat(currentSpending).toFixed(3)}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={handleResetSpending}
+                    className="ml-2"
+                  >
                     Reset Spent
                   </Button>
                 </div>
@@ -572,15 +649,18 @@ export function TransparencyPage() {
               {/* Auto Approve Risk Threshold */}
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
                 <div>
-                  <h4 className="text-sm font-semibold text-text-primary">Auto-Approve Risk Policy</h4>
+                  <h4 className="text-sm font-semibold text-text-primary">
+                    Auto-Approve Risk Policy
+                  </h4>
                   <p className="text-xs text-text-muted">
-                    Automatically bypass query review screens if the generated plan risk matches this threshold.
+                    Automatically bypass query review screens if the generated plan risk matches
+                    this threshold.
                   </p>
                 </div>
                 <div>
                   <select
                     value={autoApproveThreshold}
-                    onChange={e => setAutoApproveThreshold(e.target.value)}
+                    onChange={(e) => setAutoApproveThreshold(e.target.value)}
                     className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text-primary focus:outline-none"
                   >
                     <option value="never">Never (Always Manually Review Plan)</option>

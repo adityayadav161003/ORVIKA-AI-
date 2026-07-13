@@ -17,16 +17,20 @@ test.describe("Chat Interface E2E Tests", () => {
 
   test("should allow creating a new session and sending messages", async ({ page }) => {
     // Look for create chat / new session button
-    const newChatBtn = page.locator("button:has-text('New Chat'), button:has-text('New session'), button[id*='new-session']");
-    if (await newChatBtn.count() > 0) {
+    const newChatBtn = page.locator(
+      "button:has-text('New Chat'), button:has-text('New session'), button[id*='new-session']",
+    );
+    if ((await newChatBtn.count()) > 0) {
       await newChatBtn.first().click();
     }
 
     // Type a message in the input
     const input = page.locator("textarea, #input-message").first();
     await input.fill("Hello, local LLM assistant!");
-    
-    const sendBtn = page.locator("button[aria-label='Send message'], button:has-text('Send')").first();
+
+    const sendBtn = page
+      .locator("button[aria-label='Send message'], button:has-text('Send')")
+      .first();
     await sendBtn.click();
 
     // Message bubble should be added

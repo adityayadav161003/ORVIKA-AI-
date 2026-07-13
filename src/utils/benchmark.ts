@@ -43,7 +43,8 @@ export async function runSystemBenchmark(): Promise<SystemBenchmarkResult> {
 
   let llmBenchmark;
   try {
-    llmBenchmark = await invoke<NonNullable<SystemBenchmarkResult["llmBenchmark"]>>("run_llm_benchmark");
+    llmBenchmark =
+      await invoke<NonNullable<SystemBenchmarkResult["llmBenchmark"]>>("run_llm_benchmark");
   } catch (err) {
     console.warn("LLM model benchmark not run or failed:", err);
   }

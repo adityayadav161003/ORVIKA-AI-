@@ -16,6 +16,7 @@ graph TD
 ```
 
 ## RAG & Search Pipeline
+
 1. **Upload**: React frontend receives drag-and-drop document.
 2. **Parse**: Rust commands spawn the Python MarkItDown helper to produce clean Markdown.
 3. **Chunk**: Paragraphs are chunked with overlap.

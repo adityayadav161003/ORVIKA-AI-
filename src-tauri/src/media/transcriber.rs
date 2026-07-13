@@ -1,9 +1,9 @@
-use std::path::{Path, PathBuf};
-use std::fs;
-use crate::python::manager::PythonManager;
-use crate::media::types::MediaTranscript;
 use crate::media::extractor;
+use crate::media::types::MediaTranscript;
+use crate::python::manager::PythonManager;
 use crate::utils::error::{AppError, AppResult};
+use std::fs;
+use std::path::{Path, PathBuf};
 
 /// Standardizes a video or audio file into a temporary WAV format,
 /// executes Whisper transcription via the Python virtual environment,
@@ -17,15 +17,12 @@ pub fn transcribe(
     // Ensure temp directory exists
     let temp_dir = app_data_dir.join("temp");
     fs::create_dir_all(&temp_dir).map_err(|e| AppError::Other(e.to_string()))?;
-    
+
     // Create a random temporary WAV filename
-    let temp_wav_path = temp_dir.join(format!(
-        "transcode_{}.wav",
-        uuid::Uuid::new_v4()
-    ));
+    let temp_wav_path = temp_dir.join(format!("transcode_{}.wav", uuid::Uuid::new_v4()));
 
     tracing::info!("Converting media file to 16kHz WAV: {:?}", temp_wav_path);
-    
+
     // Convert video or audio file to PCM WAV
     if let Err(err) = extractor::extract_audio(media_path, &temp_wav_path) {
         let _ = fs::remove_file(&temp_wav_path);

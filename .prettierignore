@@ -1,0 +1,7 @@
+node_modules/
+dist/
+src-tauri/target/
+package-lock.json
+development.html
+mimo.html
+create-tauri-app-*.tgz

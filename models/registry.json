@@ -1,0 +1,28 @@
+{
+  "models": [
+    {
+      "id": "gemma-2-9b-it-q4",
+      "name": "Gemma 2 9B Instruct (Q4_K_M)",
+      "url": "https://huggingface.co/bartowski/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-Q4_K_M.gguf",
+      "sizeBytes": 5773000000,
+      "checksumSha256": "",
+      "quantization": "Q4_K_M",
+      "minVramGb": 6,
+      "recommendedVramGb": 8,
+      "contextLength": 8192,
+      "filename": "gemma-2-9b-it-Q4_K_M.gguf"
+    },
+    {
+      "id": "smollm2-360m-q8",
+      "name": "SmolLM2 360M (Q8_0) — dev / benchmark",
+      "url": "https://huggingface.co/bartowski/SmolLM2-360M-Instruct-GGUF/resolve/main/SmolLM2-360M-Instruct-Q8_0.gguf",
+      "sizeBytes": 386000000,
+      "checksumSha256": "",
+      "quantization": "Q8_0",
+      "minVramGb": 0,
+      "recommendedVramGb": 2,
+      "contextLength": 8192,
+      "filename": "SmolLM2-360M-Instruct-Q8_0.gguf"
+    }
+  ]
+}

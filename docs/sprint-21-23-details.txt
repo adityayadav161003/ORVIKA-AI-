@@ -1,0 +1,45 @@
+end Summary with key topics, decisions; configurable detail S19-T6 Implement transcript export (text + SRT) Backend + Frontend Export generates valid SRT with timestamps Sprint 19 
+Deliverable: Video player with synced transcript, Q&amp;A over media content. Sprint 20 — OCR &amp; Media Polish Item Description Owner Acceptance Criteria S20-T1 Implement Tesseract OCR integration (Python subprocess) AI/ML Scanned PDF → text extracted; accuracy &gt; 90% S20-T2 Implement OCR fallback in document pipeline (auto-detect scanned PDF) Backend Scanned PDFs auto-routed to OCR; results indexed S20-T3 Build OCR confidence display in DocumentViewer Frontend OCR pages marked; confidence score shown per page S20-T4 Media format support validation (all listed formats) QA MP4, MKV, AVI, WebM, MP3, WAV, M4A, FLAC, OGG all work S20-T5 Write integration tests for media analysis flow QA Full flow test: upload → transcribe → search → Q&amp;A S20-T6 CPU transcription performance optimization AI/ML CPU time reduced by using base model; user-selectable quality Sprint 20 
+Deliverable: Media analysis + OCR complete. 
+MILESTONE: Media feature complete. Phase 6: Polish &amp; Multi-Provider (Sprints 21–23) 
+
+=== Sprint 21 === — Multi-Cloud Provider Item Description Owner Acceptance Criteria 
+* S21-T1 Implement Google Gemini API client Backend Gemini sends queries and receives responses correctly 
+* S21-T2 Implement Anthropic Claude API client Backend Claude sends queries and receives responses correctly 
+* S21-T3 Build provider selection UI (Settings + per-session override) Frontend Provider selectable; persisted; per-session override works 
+* S21-T4 Multi-provider transparency logging Backend All three providers logged correctly in audit trail 
+* S21-T5 Test all providers with same research query; compare quality AI/ML All three return valid responses; quality comparison documented 
+* S21-T6 Implement per-provider error handling Backend Each provider's specific error codes handled correctly 
+
+=== Sprint 21 === 
+Deliverable: All three cloud providers integrated and tested. 
+
+=== Sprint 22 === — Accessibility &amp; UX Item Description Owner Acceptance Criteria 
+* S22-T1 WCAG 2.1 AA audit and fixes Frontend Automated audit passes; manual screen reader test passes 
+* S22-T2 Full keyboard navigation implementation Frontend All features navigable by keyboard; focus indicators visible 
+* S22-T3 ARIA labels on all interactive elements Frontend Screen reader announces all elements correctly 
+* S22-T4 High contrast theme and adjustable font size Frontend Theme switchable; font size adjustable 12–24pt 
+* S22-T5 Reduced motion option Frontend Animations disabled when preference set 
+* S22-T6 Dark/light theme refinement and polish Frontend Both themes look professional; no visual artifacts 
+
+=== Sprint 22 === 
+Deliverable: Accessible, polished UI with WCAG 2.1 AA compliance. 
+
+=== Sprint 23 === — Knowledge Base &amp; Final Features Item Description Owner Acceptance Criteria 
+* S23-T1 Implement global knowledge base (persistent, cross-session) Backend Documents indexed in global FAISS; searchable across sessions 
+* S23-T2 Build knowledge base management UI (list, remove, rebuild) Frontend KB visible; documents removable; index rebuildable 
+* S23-T3 Implement custom GGUF model import Backend + Frontend Import dialog; file validation; model appears in list 
+* S23-T4 Implement local telemetry (opt-in, local-only diagnostics) Backend Telemetry off by default; opt-in in settings; never leaves device 
+* S23-T5 Implement application theme persistence (system/light/dark) Frontend Theme persists across restarts; system theme detected 
+* S23-T6 Feature-complete integration test suite QA All features tested end-to-end; test suite green 
+
+=== Sprint 23 === 
+Deliverable: Feature-complete beta. 
+MILESTONE: Feature freeze. Beta ready. Phase 7: Launch Preparation (Sprints 24–28) 
+
+=== Sprint 24 === — Performance Optimization Item Description Owner Acceptance Criteria S24-T1 Profile application startup; optimize cold start Backend Startup &lt; 3s GPU / &lt; 5s CPU confirmed S24-T2 Optimize memory usage (idle &lt; 500 MB; with model = model size + 500 MB) Backend Memory targets met; no leaks over 4-hour session S24-T3 Optimize FAISS indexing for large document sets AI/ML 500 documents indexed without performance degradation S24-T4 GPU inference optimization (batch size, KV cache tuning) AI/ML Generation speed improved by 10%+ over baseline S24-T5 Frontend performance optimization (bundle size, lazy loading) Frontend Bundle &lt; 2 MB gzipped; initial load &lt; 1s S24-T6 Performance regression test suite (automated benchmarks) QA Benchmarks run in CI; regressions block merges 
+
+=== Sprint 24 === 
+Deliverable: Performance-optimized application meeting all targets. Sprint 25 — Comprehensive Testing Item Description Owner Acceptance Criteria S25-T1 End-to-end test suite (Playwright) QA All major user flows covered; tests pass on CI S25-T2 Edge case testing (corrupt files, large files, empty sessions) QA All edge cases handled gracefully; no crashes S25-T3 Cross-hardware testing (min spec + recommended spec) QA App works on both configurations; performance targets met S25-T4 User acceptance testing (internal team, 5+ external testers) Team UAT feedback collected; critical issues fixed S25-T5 Crash rate validation (&lt; 0.1% of sessions) QA Crash rate confirmed over 100+ test sessions S25-T6 Memory leak validation (4-hour continuous use) QA No memory growth beyond expected bounds Sprint 25 
+Deliverable: Comprehensive test coverage; UAT complete; critical bugs fixed. Sprint 26 — Documentation Item Description Owner Acceptance Criteria S26-T1 User Guide (getting started, feature walkthroughs, FAQ) Team Complete guide; tested by non-technical user S26-T2 Admin Guide (enterprise deployment, compliance, configuration) Team Complete guide; covers all settings and compliance features S26-T3 API Reference (all Tauri IPC commands documented) Backend Every command documented with request/response examples S26-T4 Security Model documentation Security Threat model, sanitization pipeline, encryption details documented S26-T5 Architecture documentation Backend Component diagrams, data flows, tech decisions documented S26-T6 Compliance Guide (HIPAA, SOX, GDPR mapping) Security Each regulation mapped to product features and architecture Sprint 26 
+Deliverable: Complete documentation suite. Sprint 27 — Release Infrastructure Item Description Owner Acceptance Criteria S27-T1 Build signed installer (Tauri NSIS build + code signing) Full-stack Installer builds; signed with EV certificate; installs correctly

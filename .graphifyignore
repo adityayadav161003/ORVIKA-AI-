@@ -1,0 +1,33 @@
+# Exclude build artifacts and dependencies
+node_modules/
+dist/
+dist-ssr/
+src-tauri/target/
+src-tauri/WixTools/
+
+# Exclude logs
+*.log
+npm-debug.log*
+
+# Exclude environment and OS files
+.env
+.env.*
+.DS_Store
+Thumbs.db
+
+# Exclude IDE folders
+.vscode/
+.idea/
+
+# Exclude Tauri app data and database files
+*.db
+*.db-shm
+*.db-wal
+
+# Exclude binaries
+bin/
+*.dll
+
+# Exclude Graphify's own outputs
+graphify-out/
+.graphify/

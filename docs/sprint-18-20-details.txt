@@ -1,0 +1,40 @@
+y-hardened. Phase 5: Media &amp; OCR (Sprints 18–20) 
+
+=== Sprint 18 === — Video/Audio Transcription Item Description Owner Acceptance Criteria 
+* S18-T1 Create Python Faster-Whisper subprocess AI/ML Audio input → transcript with timestamps; via JSON IPC 
+* S18-T2 Implement FFmpeg audio extraction (from video files) Backend Audio extracted from MP4/MKV/AVI/WebM; WAV format 
+* S18-T3 Implement media transcriber Rust module Backend Full pipeline: video → audio → transcript 
+* S18-T4 Implement transcript repository (SQLite CRUD) Backend Transcripts saved with timestamps and segments 
+* S18-T5 Build MediaUpload component (drag-and-drop, format validation) Frontend Video/audio files accepted; progress shown 
+* S18-T6 Transcription performance test (1-hour video, GPU + CPU) QA &lt; 30 min GPU / &lt; 2 hr CPU confirmed 
+
+=== Sprint 18 === 
+Deliverable: Video/audio files transcribed locally with timestamps. 
+
+=== Sprint 19 === — Media UI &amp; Q&amp;A Item Description Owner Acceptance Criteria 
+* S19-T1 Build VideoPlayer component (embedded HTML5 player) Frontend Video plays; controls work; timestamp seeking 
+* S19-T2 Build TranscriptViewer component (synced with video) Frontend Clicking segment jumps to timestamp; video syncs with scroll 
+* S19-T3 Implement transcript Q&amp;A (use transcript as RAG context) Backend Questions about video content answered with timestamp refs 
+* S19-T4 Implement transcript search (keyword + semantic) Backend + Frontend Search results with timestamps; click to seek 
+* S19-T5 Implement meeting summary generation Backend Summary with key topics, decisions; configurable detail 
+* S19-T6 Implement transcript export (text + SRT) Backend + Frontend Export generates valid SRT with timestamps 
+
+=== Sprint 19 === 
+Deliverable: Video player with synced transcript, Q&amp;A over media content. 
+
+=== Sprint 20 === — OCR &amp; Media Polish Item Description Owner Acceptance Criteria 
+* S20-T1 Implement Tesseract OCR integration (Python subprocess) AI/ML Scanned PDF → text extracted; accuracy &gt; 90% 
+* S20-T2 Implement OCR fallback in document pipeline (auto-detect scanned PDF) Backend Scanned PDFs auto-routed to OCR; results indexed 
+* S20-T3 Build OCR confidence display in DocumentViewer Frontend OCR pages marked; confidence score shown per page 
+* S20-T4 Media format support validation (all listed formats) QA MP4, MKV, AVI, WebM, MP3, WAV, M4A, FLAC, OGG all work 
+* S20-T5 Write integration tests for media analysis flow QA Full flow test: upload → transcribe → search → Q&amp;A 
+* S20-T6 CPU transcription performance optimization AI/ML CPU time reduced by using base model; user-selectable quality 
+
+=== Sprint 20 === 
+Deliverable: Media analysis + OCR complete. 
+MILESTONE: Media feature complete. Phase 6: Polish &amp; Multi-Provider (Sprints 21–23) Sprint 21 — Multi-Cloud Provider Item Description Owner Acceptance Criteria S21-T1 Implement Google Gemini API client Backend Gemini sends queries and receives responses correctly S21-T2 Implement Anthropic Claude API client Backend Claude sends queries and receives responses correctly S21-T3 Build provider selection UI (Settings + per-session override) Frontend Provider selectable; persisted; per-session override works S21-T4 Multi-provider transparency logging Backend All three providers logged correctly in audit trail S21-T5 Test all providers with same research query; compare quality AI/ML All three return valid responses; quality comparison documented S21-T6 Implement per-provider error handling Backend Each provider's specific error codes handled correctly Sprint 21 
+Deliverable: All three cloud providers integrated and tested. Sprint 22 — Accessibility &amp; UX Item Description Owner Acceptance Criteria S22-T1 WCAG 2.1 AA audit and fixes Frontend Automated audit passes; manual screen reader test passes S22-T2 Full keyboard navigation implementation Frontend All features navigable by keyboard; focus indicators visible S22-T3 ARIA labels on all interactive elements Frontend Screen reader announces all elements correctly S22-T4 High contrast theme and adjustable font size Frontend Them
+
+================================================================================
+DATABASE TABLES FOR MEDIA & TRANSCRIPTS
+================================================================================

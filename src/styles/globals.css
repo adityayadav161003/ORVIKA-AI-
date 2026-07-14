@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-accent: #1a4a3a;
+  --color-accent-light: #e8f0ec;
+  --color-accent-secondary: #c45d3e;
+  --color-surface: #f7f6f3;
+  --color-border: #e0ddd6;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #4a4840;
+  --color-text-muted: #8a8578;
+  --font-heading: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Source Serif 4", Georgia, serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+}
+
+:root {
+  --accent: #1a4a3a;
+  --accent-light: #e8f0ec;
+  --accent-secondary: #c45d3e;
+  --surface: #f7f6f3;
+  --border: #e0ddd6;
+  --text-primary: #1a1a18;
+  --text-secondary: #4a4840;
+  --text-muted: #8a8578;
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --accent: #5aad8f;
+  --accent-light: #1a3530;
+  --accent-secondary: #e07054;
+  --surface: #1a1a18;
+  --border: #2e2e2b;
+  --text-primary: #eeecea;
+  --text-secondary: #a8a49c;
+  --text-muted: #6a6760;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] .bg-white {
+  background-color: #111110;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .bg-white {
+  background-color: #1e1e1c !important;
+}
+
+[data-theme="dark"] .border-border {
+  border-color: var(--border) !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Accessibility ── */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-delay: -1ms !important;
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  background-attachment: initial !important;
+  scroll-behavior: auto !important;
+  transition-delay: 0s !important;
+  transition-duration: 0s !important;
+}

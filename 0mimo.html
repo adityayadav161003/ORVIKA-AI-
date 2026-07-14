@@ -1,0 +1,2319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORVIKA AI — PRD v2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Mono:wght@300;400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4;
+    margin: 2.2cm 2cm 2.8cm 2cm;
+    @bottom-center {
+      content: "ORVIKA AI — PRD v2.0 — CONFIDENTIAL";
+      font-family: 'DM Mono', monospace;
+      font-size: 6.5pt;
+      color: #8a8578;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'DM Mono', monospace;
+      font-size: 7.5pt;
+      color: #8a8578;
+    }
+  }
+  @page :first {
+    @bottom-center { content: none; }
+    @bottom-right { content: none; }
+  }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f6f3;
+    --border: #e0ddd6;
+    --accent: #1a4a3a;
+    --accent-light: #e8f0ec;
+    --accent-secondary: #c45d3e;
+    --text-primary: #1a1a18;
+    --text-secondary: #4a4840;
+    --text-muted: #8a8578;
+    --code-bg: #f0eeea;
+    --shadow: rgba(26,26,24,0.06);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    color: var(--text-primary);
+    background: var(--bg);
+    font-size: 10pt;
+    line-height: 1.62;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Cover Page ── */
+  .cover-page {
+    page-break-after: always;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 5cm 3.5cm;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 10px; height: 100%;
+    background: var(--accent);
+  }
+  .cover-page::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 45%; height: 45%;
+    background: radial-gradient(ellipse at bottom right, var(--accent-light) 0%, transparent 70%);
+    opacity: 0.5;
+  }
+  .cover-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5pt;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.8cm;
+    font-weight: 500;
+  }
+  .cover-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48pt;
+    font-weight: 700;
+    line-height: 1.08;
+    color: var(--text-primary);
+    margin-bottom: 1cm;
+    max-width: 85%;
+  }
+  .cover-subtitle {
+    font-family: 'Source Serif 4', serif;
+    font-size: 13pt;
+    color: var(--text-secondary);
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: 3cm;
+    max-width: 70%;
+    line-height: 1.55;
+  }
+  .cover-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.2cm 2cm;
+    width: 100%;
+    max-width: 85%;
+  }
+  .cover-meta-item {
+    border-top: 1.5px solid var(--border);
+    padding-top: 0.35cm;
+  }
+  .cover-meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 6.5pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.12cm;
+  }
+  .cover-meta-value {
+    font-size: 9.5pt;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .cover-tagline {
+    position: absolute;
+    bottom: 3.5cm;
+    right: 3.5cm;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11pt;
+    font-style: italic;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  /* ── TOC ── */
+  .toc-page {
+    page-break-after: always;
+    padding: 0 0 2cm 0;
+  }
+  .toc-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1cm;
+    padding-bottom: 0.4cm;
+    border-bottom: 2px solid var(--accent);
+  }
+  .toc-list {
+    list-style: none;
+    counter-reset: toc;
+  }
+  .toc-list li {
+    counter-increment: toc;
+    display: flex;
+    align-items: baseline;
+    padding: 0.15cm 0;
+    border-bottom: 1px dotted var(--border);
+  }
+  .toc-list li::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5pt;
+    color: var(--accent);
+    margin-right: 0.4cm;
+    min-width: 1.1cm;
+    font-weight: 500;
+  }
+  .toc-list li a {
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 10pt;
+    flex: 1;
+  }
+  .toc-sub {
+    list-style: none;
+    padding-left: 1.5cm;
+    margin-top: 0.05cm;
+  }
+  .toc-sub li {
+    padding: 0.08cm 0;
+    border-bottom: none;
+    font-size: 9pt;
+    color: var(--text-secondary);
+  }
+  .toc-sub li::before { display: none; }
+
+  /* ── Headings ── */
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 1.8cm;
+    margin-bottom: 0.5cm;
+    padding-bottom: 0.3cm;
+    border-bottom: 2px solid var(--accent);
+    page-break-after: avoid;
+    line-height: 1.2;
+  }
+  h1:first-of-type { margin-top: 0; }
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15pt;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 1cm;
+    margin-bottom: 0.3cm;
+    page-break-after: avoid;
+    line-height: 1.3;
+  }
+  h3 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 11.5pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 0.7cm;
+    margin-bottom: 0.2cm;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5pt;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 0.5cm;
+    margin-bottom: 0.15cm;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin-bottom: 0.35cm;
+    text-align: justify;
+    hyphens: auto;
+  }
+  ul, ol {
+    margin-bottom: 0.35cm;
+    padding-left: 0.9cm;
+  }
+  li { margin-bottom: 0.12cm; }
+
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.4cm 0 0.5cm 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+  thead th {
+    background: var(--accent);
+    color: white;
+    font-family: 'DM Mono', monospace;
+    font-size: 7pt;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25cm 0.35cm;
+    text-align: left;
+    border: none;
+  }
+  tbody td {
+    padding: 0.2cm 0.35cm;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--surface); }
+  tr.highlight td { background: var(--accent-light) !important; font-weight: 500; }
+
+  /* ── Code / Diagrams ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 0.4cm;
+    margin: 0.4cm 0 0.5cm 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 7pt;
+    line-height: 1.55;
+    overflow-x: auto;
+    white-space: pre;
+    page-break-inside: avoid;
+    border-radius: 2px;
+  }
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5pt;
+    background: var(--code-bg);
+    padding: 0.04cm 0.12cm;
+    border-radius: 2px;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* ── Callout Blocks ── */
+  .callout {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 0.35cm 0.45cm;
+    margin: 0.4cm 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  .callout.warning {
+    background: #fef3e8;
+    border-left-color: var(--accent-secondary);
+  }
+  .callout strong {
+    display: block;
+    margin-bottom: 0.08cm;
+    font-family: 'DM Mono', monospace;
+    font-size: 7.5pt;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .callout.warning strong { color: var(--accent-secondary); }
+
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5pt;
+    color: var(--accent);
+    margin-right: 0.25cm;
+    font-weight: 500;
+  }
+
+  .page-break { page-break-before: always; }
+  .no-break { page-break-inside: avoid; }
+
+  /* ── Screen Styles ── */
+  @media screen {
+    body {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 2cm 2.5cm;
+      box-shadow: 0 0 40px var(--shadow);
+      min-height: 100vh;
+    }
+  }
+
+  @media print {
+    body { font-size: 9.5pt; }
+    .cover-page { min-height: 100vh; }
+    a { color: var(--accent) !important; text-decoration: underline; }
+  }
+
+  .diagram-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 7pt;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.12cm;
+    margin-top: 0.4cm;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ COVER PAGE ═══════════ -->
+<div class="cover-page">
+  <div class="cover-label">Product Requirements Document v2.0 — Master PRD</div>
+  <h1 style="font-size:48pt;border:none;padding:0;margin:0 0 1cm 0;max-width:85%;" class="cover-title">ORVIKA AI</h1>
+  <p class="cover-subtitle">A privacy-first desktop AI assistant that processes sensitive documents locally and researches publicly — without ever uploading your files to the cloud.</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><div class="cover-meta-label">Version</div><div class="cover-meta-value">2.0 — Master PRD</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Date</div><div class="cover-meta-value">May 30, 2026</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Status</div><div class="cover-meta-value">Production-Ready Draft</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Classification</div><div class="cover-meta-value">Confidential — Internal</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Platform</div><div class="cover-meta-value">Windows Desktop (Tauri + React)</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Target GA</div><div class="cover-meta-value">12 Months</div></div>
+  </div>
+  <div class="cover-tagline">"Private by Design. Intelligent by Collaboration."</div>
+</div>
+
+<!-- ═══════════ DOCUMENT CONTROL ═══════════ -->
+<div class="toc-page">
+  <div class="toc-title">Document Control</div>
+  <table>
+    <thead><tr><th>Field</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Document</strong></td><td>Product Requirements Document v2.0</td></tr>
+      <tr><td><strong>Product</strong></td><td>ORVIKA AI</td></tr>
+      <tr><td><strong>Version</strong></td><td>2.0 — Master PRD</td></tr>
+      <tr><td><strong>Date</strong></td><td>May 30, 2026</td></tr>
+      <tr><td><strong>Status</strong></td><td>Production-Ready Draft</td></tr>
+      <tr><td><strong>Classification</strong></td><td>Confidential — Internal</td></tr>
+      <tr><td><strong>Target Platform</strong></td><td>Windows 10/11 Desktop (Tauri + React)</td></tr>
+      <tr><td><strong>Estimated MVP Timeline</strong></td><td>6 months</td></tr>
+      <tr><td><strong>Target GA</strong></td><td>12 months</td></tr>
+    </tbody>
+  </table>
+  <h3>Revision History</h3>
+  <table>
+    <thead><tr><th>Version</th><th>Date</th><th>Author</th><th>Changes</th></tr></thead>
+    <tbody>
+      <tr><td>0.1</td><td>May 2026</td><td>Product Team</td><td>Initial draft PRD</td></tr>
+      <tr><td>1.0</td><td>May 2026</td><td>Product Team</td><td>Complete PRD with all sections</td></tr>
+      <tr><td>2.0</td><td>May 2026</td><td>Product / Engineering / Security</td><td>Merged master PRD — production-grade, enterprise-ready, startup-executable</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════ TABLE OF CONTENTS ═══════════ -->
+<div class="toc-page">
+  <div class="toc-title">Table of Contents</div>
+  <ol class="toc-list">
+    <li><a href="#s1">Executive Summary</a></li>
+    <li><a href="#s2">Problem Statement</a></li>
+    <li><a href="#s3">Vision</a></li>
+    <li><a href="#s4">Market Analysis</a></li>
+    <li><a href="#s5">User Personas</a></li>
+    <li><a href="#s6">Product Architecture</a></li>
+    <li><a href="#s7">Security Architecture</a></li>
+    <li><a href="#s8">Functional Requirements</a></li>
+    <li><a href="#s9">Non-Functional Requirements</a></li>
+    <li><a href="#s10">MVP Definition</a></li>
+    <li><a href="#s11">Engineering Execution Plan</a></li>
+    <li><a href="#s12">Repository Architecture</a></li>
+    <li><a href="#s13">Database Design</a></li>
+    <li><a href="#s14">API Design</a></li>
+    <li><a href="#s15">UI/UX Specification</a></li>
+    <li><a href="#s16">Testing Strategy</a></li>
+    <li><a href="#s17">Business Model</a></li>
+    <li><a href="#s18">Success Metrics</a></li>
+    <li><a href="#s19">Future Roadmap</a></li>
+    <li><a href="#s20">CTO Review</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════ SECTION 1 ═══════════ -->
+<h1 id="s1"><span class="section-number">01</span> Executive Summary</h1>
+
+<h2>1.1 Product Overview</h2>
+<p><strong>ORVIKA AI</strong> is a Windows desktop application that allows individuals and organizations to analyze sensitive documents — PDFs, research papers, business reports, meeting recordings, and videos — using AI, <em>without ever uploading the original files to the cloud</em>.</p>
+<p>The application processes all private data locally on the user's device using a local AI model (Gemma 4). When deeper research is needed, the local agent formulates abstract research queries — scrubbed of any user data — and sends only those queries to cloud-based AI services (OpenAI, Google, Anthropic). The cloud returns public research, which the local model combines with the private analysis to produce a comprehensive final answer.</p>
+
+<h2>1.2 Core Innovation — Hybrid Privacy Architecture</h2>
+<p>The fundamental innovation is the <strong>separation of private reasoning from public research</strong>. Instead of sending user documents to the cloud for analysis, the system:</p>
+<ol>
+  <li><strong>Analyzes privately</strong> — The local model reads, understands, and reasons over user files entirely on-device.</li>
+  <li><strong>Abstracts research needs</strong> — The local agent converts knowledge gaps into generic research topics stripped of all user data.</li>
+  <li><strong>Researches publicly</strong> — The cloud agent researches only public information based on abstract topics.</li>
+  <li><strong>Synthesizes locally</strong> — The local model merges private analysis with public research into the final output.</li>
+</ol>
+
+<div class="no-break">
+<h4>What the Cloud Sees vs. Doesn't See</h4>
+<table>
+  <thead><tr><th>Cloud Receives</th><th>Cloud Never Receives</th></tr></thead>
+  <tbody>
+    <tr><td>Research topics (e.g., "Industry EV battery market growth trends 2025–2026")</td><td>User documents (e.g., "Tesla_Internal_Report_2026.pdf")</td></tr>
+    <tr><td>General questions (e.g., "Best customer retention strategies for SaaS")</td><td>Document content (actual text from uploaded files)</td></tr>
+    <tr><td>Public entity names when used as research subjects</td><td>User metadata, filenames, or context about why the research is needed</td></tr>
+    <tr><td>Follow-up research queries based on initial results</td><td>Any information that could reconstruct the user's private data</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>1.3 Why Now</h2>
+<ol>
+  <li><strong>Privacy regulations are tightening worldwide</strong> — GDPR, CCPA, China's PIPL, EU AI Act, and sector-specific mandates (HIPAA, SOX, ITAR, FedRAMP) are creating hard constraints on how data can be processed.</li>
+  <li><strong>Enterprise AI adoption is gated by security concerns</strong> — A 2025 McKinsey survey found that 65% of enterprises cite data privacy as the #1 barrier to AI adoption.</li>
+  <li><strong>Local AI models are becoming viable on consumer hardware</strong> — Gemma 4, Llama, and Phi models now deliver meaningful reasoning quality on 8–16 GB RAM machines.</li>
+  <li><strong>Trust in cloud AI providers is eroding</strong> — High-profile data incidents and opaque data handling policies have made users and organizations wary.</li>
+  <li><strong>No existing product solves the hybrid problem</strong> — Cloud AI is powerful but leaks data; local AI is private but weak. No product bridges the gap with transparency.</li>
+</ol>
+
+<h2>1.4 Market Opportunity</h2>
+<p>The global AI market is projected to exceed $500B by 2027. The privacy-preserving AI segment — defined as products that process sensitive data without cloud exfiltration — is estimated at $8–12B and growing at 35% CAGR as regulated industries adopt AI under compliance constraints.</p>
+
+<h2>1.5 Key Differentiation</h2>
+<table>
+  <thead><tr><th>Differentiator</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Hybrid Privacy Architecture</strong></td><td>Separates private analysis from public research at the architectural level</td></tr>
+    <tr><td><strong>Transparency Dashboard</strong></td><td>Full visibility into every outbound network request — content, destination, timing, response</td></tr>
+    <tr><td><strong>Zero Data Upload Guarantee</strong></td><td>Architecturally enforced, not just a policy promise</td></tr>
+    <tr><td><strong>Offline-First Design</strong></td><td>Full functionality without internet; cloud enhances but is never required</td></tr>
+    <tr><td><strong>User-Controlled Cloud</strong></td><td>BYOK (Bring Your Own Key), choose provider, control spending</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 2 ═══════════ -->
+<h1 id="s2" class="page-break"><span class="section-number">02</span> Problem Statement</h1>
+
+<h2>2.1 The Privacy Problem with Cloud AI</h2>
+<p>When users upload files to cloud-based AI assistants (ChatGPT, Google Gemini, Claude, etc.), their data leaves the device and enters third-party infrastructure. This creates five categories of serious concern:</p>
+<table>
+  <thead><tr><th>Concern</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Data Privacy</strong></td><td>Sensitive personal or business information is transmitted to and potentially stored on third-party servers</td></tr>
+    <tr><td><strong>Confidential Business Information</strong></td><td>Financial reports, strategic plans, and internal memos could be exposed</td></tr>
+    <tr><td><strong>Intellectual Property</strong></td><td>Trade secrets, patents-in-progress, and proprietary research risk leakage</td></tr>
+    <tr><td><strong>Regulatory Compliance</strong></td><td>Healthcare (HIPAA), finance (SOX, GLBA), government (ITAR, FedRAMP) restrict data handling</td></tr>
+    <tr><td><strong>User Trust</strong></td><td>Users are increasingly uncomfortable with data collection practices of cloud AI providers</td></tr>
+  </tbody>
+</table>
+
+<h2>2.2 Compliance Barriers to Enterprise AI Adoption</h2>
+<p>Regulated industries face hard legal constraints — not preferences — on data handling:</p>
+<table>
+  <thead><tr><th>Industry</th><th>Regulation</th><th>Key Constraint</th></tr></thead>
+  <tbody>
+    <tr><td>Healthcare</td><td>HIPAA</td><td>Protected health information (PHI) cannot leave controlled environments</td></tr>
+    <tr><td>Finance</td><td>SOX, GLBA</td><td>Non-public financial data must remain within audited infrastructure</td></tr>
+    <tr><td>Legal</td><td>Attorney-Client Privilege</td><td>Privileged communications cannot be processed by third parties without consent</td></tr>
+    <tr><td>Government</td><td>ITAR, FedRAMP, CMMC</td><td>Classified or controlled information must remain on authorized systems</td></tr>
+    <tr><td>Research</td><td>University IRB, Export Controls</td><td>Unpublished findings and controlled research data have handling restrictions</td></tr>
+  </tbody>
+</table>
+<p>These are not soft preferences. Violating them can result in criminal liability, loss of professional licenses, contract termination, and regulatory sanctions.</p>
+
+<h2>2.3 Enterprise Adoption Challenges</h2>
+<ul>
+  <li><strong>Shadow AI risk</strong> — Employees use personal ChatGPT accounts for work documents because no compliant alternative exists.</li>
+  <li><strong>Vendor lock-in</strong> — Cloud AI providers change terms, pricing, and data handling policies unilaterally.</li>
+  <li><strong>Audit requirements</strong> — Regulated industries require audit trails for every data processing event.</li>
+  <li><strong>Data residency</strong> — Some jurisdictions require data to remain within geographic boundaries.</li>
+</ul>
+
+<h2>2.4 Local AI Limitations</h2>
+<p>Fully local AI solutions (Ollama, LM Studio, LocalAI) solve the privacy problem but create capability problems:</p>
+<ul>
+  <li><strong>Requires powerful hardware</strong> — 16 GB+ RAM, dedicated GPU for acceptable performance.</li>
+  <li><strong>Smaller, weaker models</strong> — Local models have lower reasoning quality than frontier cloud models.</li>
+  <li><strong>No current information</strong> — Local models have no access to real-time data, recent publications, or market information.</li>
+  <li><strong>Complex setup</strong> — Non-technical users struggle with model download, quantization, and configuration.</li>
+</ul>
+
+<h2>2.5 The Market Gap</h2>
+<div class="callout">
+  <strong>The Gap</strong>
+  No existing product combines local-first privacy for sensitive data with cloud-powered research depth for public information — while giving users full transparency into what leaves their device. This gap exists at the intersection of three converging trends: rising AI capability, tightening privacy regulation, and growing enterprise AI demand.
+</div>
+
+<!-- ═══════════ SECTION 3 ═══════════ -->
+<h1 id="s3" class="page-break"><span class="section-number">03</span> Vision</h1>
+
+<h2>3.1 Long-Term Vision</h2>
+<p>Create a <strong>privacy-first AI operating environment</strong> where files remain local, AI agents collaborate intelligently, cloud models provide research-only capabilities, and users have complete visibility into what leaves their device. Within 2–3 years, this evolves into a platform where AI understands your local files contextually, assists across applications without data leaving the device, and enables federated research sharing without source document exposure.</p>
+
+<h2>3.2 Mission</h2>
+<p>Democratize access to advanced AI research capabilities for every individual and organization — regardless of their data sensitivity constraints.</p>
+
+<h2>3.3 Core Principles</h2>
+<table>
+  <thead><tr><th>Principle</th><th>Description</th><th>Enforcement</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Private by Default</strong></td><td>User files never leave the device. Period.</td><td>Architectural constraint — no code path transmits file content</td></tr>
+    <tr><td><strong>Transparent by Design</strong></td><td>Every outbound network request is logged, visible, and auditable</td><td>Transparency Dashboard with full request/response logging</td></tr>
+    <tr><td><strong>Intelligent by Collaboration</strong></td><td>Local and cloud AI work together — local handles private reasoning, cloud handles public research</td><td>Research Orchestrator with clear boundary enforcement</td></tr>
+    <tr><td><strong>User Sovereignty</strong></td><td>Users control their data, models, API keys, and network activity</td><td>BYOK, local config, no telemetry by default</td></tr>
+    <tr><td><strong>Offline First</strong></td><td>The product works fully offline. Cloud features enhance but are never required</td><td>All core features functional without network connectivity</td></tr>
+    <tr><td><strong>Explainable by Nature</strong></td><td>Every answer clearly attributes claims to either the user's document or public research</td><td>Source attribution in all synthesis outputs</td></tr>
+    <tr><td><strong>Graceful Degradation</strong></td><td>When cloud is unavailable or rejected, local analysis continues without interruption</td><td>No feature requires cloud connectivity</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 4 ═══════════ -->
+<h1 id="s4" class="page-break"><span class="section-number">04</span> Market Analysis</h1>
+
+<h2>4.1 TAM / SAM / SOM</h2>
+<table>
+  <thead><tr><th>Market</th><th>Definition</th><th>Estimated Size</th></tr></thead>
+  <tbody>
+    <tr><td><strong>TAM</strong></td><td>All AI-powered knowledge work tools globally</td><td>$180B by 2027</td></tr>
+    <tr><td><strong>SAM</strong></td><td>Privacy-sensitive AI document analysis and research tools</td><td>$8–12B by 2027</td></tr>
+    <tr><td><strong>SOM</strong></td><td>Realistic addressable market for a Windows desktop product in years 1–3</td><td>$200–500M</td></tr>
+  </tbody>
+</table>
+
+<h2>4.2 Target Market Segments</h2>
+<table>
+  <thead><tr><th>Segment</th><th>Examples</th><th>Privacy Urgency</th><th>Willingness to Pay</th></tr></thead>
+  <tbody>
+    <tr><td>Individual Users</td><td>Students, researchers, freelancers</td><td>Medium</td><td>Low-Medium</td></tr>
+    <tr><td>Small Businesses</td><td>Startups, consulting firms, legal practices</td><td>High</td><td>Medium</td></tr>
+    <tr><td>Enterprise</td><td>Financial institutions, pharma, defense</td><td>Critical</td><td>High</td></tr>
+    <tr><td>Government</td><td>Federal/state agencies, military</td><td>Critical</td><td>High</td></tr>
+    <tr><td>Healthcare</td><td>Hospitals, clinical research organizations</td><td>Critical (HIPAA)</td><td>High</td></tr>
+  </tbody>
+</table>
+
+<h2>4.3 Competitive Analysis</h2>
+
+<h3>4.3.1 Fully Cloud-Based AI</h3>
+<table>
+  <thead><tr><th>Product</th><th>Strengths</th><th>Weaknesses</th><th>Differentiation vs. Us</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ChatGPT</strong></td><td>Powerful reasoning, broad knowledge, web browsing</td><td>Files leave device, no privacy guarantee, opaque data handling</td><td>We provide architectural privacy, not policy privacy</td></tr>
+    <tr><td><strong>Gemini</strong></td><td>Strong multimodal, fast, integrated ecosystem</td><td>Google data practices, cloud-dependent</td><td>We never upload; Gemini processes everything in-cloud</td></tr>
+    <tr><td><strong>Claude</strong></td><td>Strong analysis, long context, safety focus</td><td>Cloud-dependent, privacy by policy not architecture</td><td>Our privacy is structural, not contractual</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3.2 Fully Local AI</h3>
+<table>
+  <thead><tr><th>Product</th><th>Strengths</th><th>Weaknesses</th><th>Differentiation vs. Us</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Ollama</strong></td><td>Maximum privacy, open-source, flexible</td><td>Complex setup, no current info, weak reasoning on small models</td><td>We add cloud research depth and a polished UX</td></tr>
+    <tr><td><strong>LM Studio</strong></td><td>GUI for local models, easy download</td><td>No research capability, limited document analysis</td><td>We provide structured document analysis + research</td></tr>
+    <tr><td><strong>PrivateGPT</strong></td><td>Privacy-focused document Q&amp;A</td><td>No research capability, basic UI, limited media support</td><td>We add video/audio analysis and hybrid research</td></tr>
+    <tr><td><strong>AnythingLLM</strong></td><td>Multi-model, document chat, open-source</td><td>No hybrid research, limited enterprise features</td><td>We provide transparency dashboard and enterprise compliance</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3.3 Specialized Tools</h3>
+<table>
+  <thead><tr><th>Product</th><th>Strengths</th><th>Weaknesses</th><th>Differentiation vs. Us</th></tr></thead>
+  <tbody>
+    <tr><td><strong>NotebookLM</strong></td><td>Excellent document synthesis, audio summaries</td><td>Cloud-only, Google data handling, limited file types</td><td>We process locally, support more formats, add research</td></tr>
+    <tr><td><strong>Microsoft Copilot</strong></td><td>Deep Office integration, enterprise features</td><td>Cloud-dependent, Microsoft data handling, limited privacy control</td><td>We guarantee zero exfiltration; Copilot uploads everything</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3.4 Competitive Positioning Matrix</h3>
+<table>
+  <thead><tr><th>Capability</th><th>ORVIKA AI</th><th>ChatGPT / Gemini / Claude</th><th>Ollama / LM Studio</th><th>NotebookLM</th><th>Enterprise AI</th></tr></thead>
+  <tbody>
+    <tr><td>Local document processing</td><td>Full</td><td>None (cloud)</td><td>Full</td><td>None (cloud)</td><td>Varies</td></tr>
+    <tr><td>Powerful reasoning</td><td>Local + Cloud</td><td>Cloud only</td><td>Limited</td><td>Cloud only</td><td>Cloud only</td></tr>
+    <tr><td>Current information</td><td>Via cloud research</td><td>Built-in</td><td>None</td><td>Built-in</td><td>Built-in</td></tr>
+    <tr><td>Privacy guarantee</td><td>Architectural</td><td>Policy only</td><td>Architectural</td><td>Policy only</td><td>Depends</td></tr>
+    <tr><td>Transparency dashboard</td><td>Full</td><td>None</td><td>N/A</td><td>None</td><td>Limited</td></tr>
+    <tr><td>Works offline</td><td>Full</td><td>None</td><td>Full</td><td>None</td><td>None</td></tr>
+    <tr><td>Video/Audio analysis</td><td>Local</td><td>Limited</td><td>None</td><td>Audio only</td><td>Varies</td></tr>
+    <tr><td>Compliance reporting</td><td>Built-in</td><td>Limited</td><td>None</td><td>None</td><td>Varies</td></tr>
+    <tr><td>Cost</td><td>Free + API costs</td><td>$20–200/mo</td><td>Free</td><td>Free</td><td>$$$$</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 5 ═══════════ -->
+<h1 id="s5" class="page-break"><span class="section-number">05</span> User Personas</h1>
+
+<h2>5.1 Dr. Sarah Chen — The Privacy-Conscious Researcher</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Dr. Sarah Chen</td></tr>
+    <tr><td><strong>Role</strong></td><td>University Researcher, Biomedical Engineering</td></tr>
+    <tr><td><strong>Age</strong></td><td>38</td></tr>
+    <tr><td><strong>Tech Comfort</strong></td><td>High</td></tr>
+    <tr><td><strong>Goals</strong></td><td>Analyze research papers, cross-reference with public literature, generate literature reviews, synthesize findings across multiple sources</td></tr>
+    <tr><td><strong>Pain Points</strong></td><td>University policy forbids uploading unpublished research to commercial AI; current local tools are too weak for serious analysis; manually cross-referencing papers is time-consuming</td></tr>
+    <tr><td><strong>Current Workflow</strong></td><td>Downloads papers to local machine, reads and annotates manually, uses Zotero for citations, writes synthesis by hand</td></tr>
+    <tr><td><strong>Why She Would Buy</strong></td><td>Local processing satisfies university policy; cloud research gives her current literature without exposing unpublished work; saves 10+ hours per literature review</td></tr>
+    <tr><td><strong>Quote</strong></td><td><em>"I need AI to help me synthesize papers, but I can't risk my unpublished findings leaving my laptop."</em></td></tr>
+  </tbody>
+</table>
+
+<h2>5.2 Marcus Webb — The Compliance-Constrained Financial Analyst</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Marcus Webb</td></tr>
+    <tr><td><strong>Role</strong></td><td>Financial Analyst, Mid-Size Consulting Firm</td></tr>
+    <tr><td><strong>Age</strong></td><td>31</td></tr>
+    <tr><td><strong>Tech Comfort</strong></td><td>Medium-High</td></tr>
+    <tr><td><strong>Goals</strong></td><td>Analyze client financial reports, benchmark against industry trends, generate presentations, prepare due diligence summaries</td></tr>
+    <tr><td><strong>Pain Points</strong></td><td>Client NDAs and SOX requirements prohibit uploading client documents to third-party AI; current workflow requires manual research and analysis</td></tr>
+    <tr><td><strong>Current Workflow</strong></td><td>Receives client reports, reads manually, searches Bloomberg/Reuters for benchmarks, writes analysis in Excel and PowerPoint</td></tr>
+    <tr><td><strong>Why He Would Buy</strong></td><td>Client data stays local; public benchmarks come from cloud research; combined analysis saves 8+ hours per report; compliance officer approves the architecture</td></tr>
+    <tr><td><strong>Quote</strong></td><td><em>"Our clients would terminate contracts if they knew their financials were being processed by OpenAI."</em></td></tr>
+  </tbody>
+</table>
+
+<h2>5.3 Elena Rodriguez — The Corporate Lawyer</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Elena Rodriguez</td></tr>
+    <tr><td><strong>Role</strong></td><td>Senior Associate, M&amp;A Practice, AmLaw 100 Firm</td></tr>
+    <tr><td><strong>Age</strong></td><td>36</td></tr>
+    <tr><td><strong>Tech Comfort</strong></td><td>Medium</td></tr>
+    <tr><td><strong>Goals</strong></td><td>Review contracts and deal documents, identify risks and anomalies, compare terms against market standards, prepare due diligence reports</td></tr>
+    <tr><td><strong>Pain Points</strong></td><td>Attorney-client privilege prohibits processing confidential documents through third-party AI; firm's compliance team blocks all cloud AI tools; she does everything manually</td></tr>
+    <tr><td><strong>Current Workflow</strong></td><td>Reads contracts line by line, uses Westlaw for market comparisons, dictates memos, reviews with associates</td></tr>
+    <tr><td><strong>Why She Would Buy</strong></td><td>Privileged documents never leave the firm's machines; cloud research provides market-standard comparisons; transparency dashboard satisfies the compliance team; saves 15+ hours per deal</td></tr>
+    <tr><td><strong>Quote</strong></td><td><em>"If I could upload contracts to ChatGPT, I'd save a week per deal. But I can't — and I won't."</em></td></tr>
+  </tbody>
+</table>
+
+<h2>5.4 Dr. James Okonkwo — The Healthcare Professional</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Dr. James Okonkwo</td></tr>
+    <tr><td><strong>Role</strong></td><td>Clinical Research Director, Academic Medical Center</td></tr>
+    <tr><td><strong>Age</strong></td><td>48</td></tr>
+    <tr><td><strong>Tech Comfort</strong></td><td>Medium</td></tr>
+    <tr><td><strong>Goals</strong></td><td>Analyze clinical trial data, summarize patient cohort studies, cross-reference with published literature, prepare IRB submissions</td></tr>
+    <tr><td><strong>Pain Points</strong></td><td>HIPAA prohibits any PHI from leaving the institution's control; hospital IT blocks all cloud AI; he relies on research assistants for literature review</td></tr>
+    <tr><td><strong>Current Workflow</strong></td><td>De-identifies data manually, uses PubMed for literature, prepares summaries in Word</td></tr>
+    <tr><td><strong>Why He Would Buy</strong></td><td>PHI never leaves the device (HIPAA-compliant by architecture); cloud research provides literature without exposing patient data; compliance team can verify via audit logs</td></tr>
+    <tr><td><strong>Quote</strong></td><td><em>"We need AI tools, but they need to run on our machines. No exceptions."</em></td></tr>
+  </tbody>
+</table>
+
+<h2>5.5 James Okafor — The Government Officer</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>James Okafor</td></tr>
+    <tr><td><strong>Role</strong></td><td>Policy Analyst, Federal Agency</td></tr>
+    <tr><td><strong>Age</strong></td><td>45</td></tr>
+    <tr><td><strong>Tech Comfort</strong></td><td>Low-Medium</td></tr>
+    <tr><td><strong>Goals</strong></td><td>Summarize policy documents, research public policy trends, draft briefing notes, analyze legislative proposals</td></tr>
+    <tr><td><strong>Pain Points</strong></td><td>Government data handling rules make cloud AI off-limits for most work; air-gapped environments are common; current tools are manual and slow</td></tr>
+    <tr><td><strong>Current Workflow</strong></td><td>Reads policy documents, uses LexisNexis for research, drafts briefings manually</td></tr>
+    <tr><td><strong>Why He Would Buy</strong></td><td>Works offline and on air-gapped machines; public policy research comes from cloud when available; simple enough for non-technical staff; audit trail satisfies security officer</td></tr>
+    <tr><td><strong>Quote</strong></td><td><em>"We need AI tools, but they need to run on our machines. No exceptions."</em></td></tr>
+  </tbody>
+</table>
+
+<h2>5.6 Priya Nair — The Startup Founder</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Priya Nair</td></tr>
+    <tr><td><strong>Role</strong></td><td>Founder, 5-person startup</td></tr>
+    <tr><td><strong>Age</strong></td><td>29</td></tr>
+    <tr><td><strong>Tech Comfort</strong></td><td>High</td></tr>
+    <tr><td><strong>Goals</strong></td><td>Competitive landscape analysis, contract review, meeting recording processing, market research, investor deck preparation</td></tr>
+    <tr><td><strong>Pain Points</strong></td><td>Cannot afford enterprise privacy solutions; needs powerful AI but protective of IP; current tools are either too expensive or too weak</td></tr>
+    <tr><td><strong>Current Workflow</strong></td><td>Uses ChatGPT for general research but avoids uploading sensitive documents; does competitive analysis manually</td></tr>
+    <tr><td><strong>Why She Would Buy</strong></td><td>Free tier handles most needs; IP stays local; cloud research gives market intelligence; one tool replaces three</td></tr>
+    <tr><td><strong>Quote</strong></td><td><em>"I'm building something new — I can't risk my business plan floating around in someone else's cloud."</em></td></tr>
+  </tbody>
+</table>
+
+<h2>5.7 Tom Brennan — The Enterprise Knowledge Worker</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Tom Brennan</td></tr>
+    <tr><td><strong>Role</strong></td><td>Senior Manager, Knowledge Management, Fortune 500</td></tr>
+    <tr><td><strong>Age</strong></td><td>42</td></tr>
+    <tr><td><strong>Tech Comfort</strong></td><td>Medium</td></tr>
+    <tr><td><strong>Goals</strong></td><td>Aggregate internal knowledge, prepare strategic briefings, analyze competitive intelligence, support executive decision-making</td></tr>
+    <tr><td><strong>Pain Points</strong></td><td>IT department blocks cloud AI tools; compliance requires audit trails; team needs AI but can't use it; multiple teams resort to shadow AI</td></tr>
+    <tr><td><strong>Current Workflow</strong></td><td>SharePoint for documents, manual research, email threads for synthesis</td></tr>
+    <tr><td><strong>Why He Would Buy</strong></td><td>Enterprise deployment satisfies IT and compliance; centralized configuration for team; audit logs for governance; eliminates shadow AI risk</td></tr>
+    <tr><td><strong>Quote</strong></td><td><em>"We need a sanctioned AI tool that our compliance team can actually approve."</em></td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 6 ═══════════ -->
+<h1 id="s6" class="page-break"><span class="section-number">06</span> Product Architecture</h1>
+
+<h2>6.1 High-Level Architecture</h2>
+<pre>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        WINDOWS DESKTOP APPLICATION                          │
+│                        (Tauri 2.0 + React + TypeScript)                     │
+│                                                                             │
+│  ┌──────────────────────── PRESENTATION LAYER ───────────────────────────┐  │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────────────┐  │  │
+│  │  │  Chat    │  │ Document │  │  Video   │  │  Transparency       │  │  │
+│  │  │   UI     │  │  Viewer  │  │  Player  │  │  Dashboard          │  │  │
+│  │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────┬──────────────┘  │  │
+│  └───────┼──────────────┼────────────┼────────────────┼─────────────────┘  │
+│  ┌───────▼──────────────▼────────────▼────────────────▼─────────────────┐  │
+│  │                   APPLICATION LOGIC LAYER                            │  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐     │  │
+│  │  │  Session     │  │  Research    │  │  Privacy &             │     │  │
+│  │  │  Manager     │  │  Orchestrator│  │  Sanitization Engine   │     │  │
+│  │  └──────────────┘  └──────────────┘  └────────────────────────┘     │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────── LOCAL PROCESSING LAYER ──────────────────────────┐  │
+│  │  ┌────────────┐  ┌──────────┐  ┌──────────┐  ┌────────────────┐    │  │
+│  │  │ Document   │  │ Video/   │  │ Vector   │  │ Local LLM      │    │  │
+│  │  │ Engine     │  │ Audio    │  │ Database │  │ Runtime        │    │  │
+│  │  │ (MarkItDown│  │ Engine   │  │ (FAISS)  │  │ (llama.cpp +   │    │  │
+│  │  │  + Tesseract│ │(Faster- │  │          │  │  Gemma 4)      │    │  │
+│  │  │  OCR)      │  │ Whisper) │  │          │  │                │    │  │
+│  │  └────────────┘  └──────────┘  └──────────┘  └────────────────┘    │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│  ┌─────────────── CLOUD CONNECTIVITY LAYER (OPTIONAL) ─────────────────┐  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐      │  │
+│  │  │ OpenAI API   │  │ Google API   │  │ Anthropic API        │      │  │
+│  │  └──────────────┘  └──────────────┘  └──────────────────────┘      │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐   │  │
+│  │  │              Request Logger &amp; Audit Trail                    │   │  │
+│  │  └─────────────────────────────────────────────────────────────┘   │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────── PERSISTENCE LAYER ───────────────────────────────┐  │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────────┐  │  │
+│  │  │ SQLite DB  │  │ File Store │  │ FAISS Index│  │ Config Store │  │  │
+│  │  │ (sessions, │  │ (uploaded  │  │ (embeddings│  │ (API keys,   │  │  │
+│  │  │  history,  │  │  files,    │  │  )         │  │  settings)   │  │  │
+│  │  │  audit log)│  │  exports)  │  │            │  │              │  │  │
+│  │  └────────────┘  └────────────┘  └────────────┘  └──────────────┘  │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>6.2 Desktop Layer</h2>
+<table>
+  <thead><tr><th>Technology</th><th>Role</th><th>Justification</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Tauri 2.0</strong></td><td>Desktop runtime</td><td>Lightweight, secure Rust backend, smaller bundle than Electron (10–15 MB vs. 150+ MB), native OS integration, allowlist-based permissions</td></tr>
+    <tr><td><strong>React 18</strong></td><td>UI framework</td><td>Mature ecosystem, concurrent rendering, rich component libraries, strong TypeScript support</td></tr>
+    <tr><td><strong>TypeScript</strong></td><td>Language</td><td>Type safety, developer productivity, maintainability</td></tr>
+    <tr><td><strong>Vite</strong></td><td>Build tool</td><td>Fast HMR, modern tooling, excellent Tauri integration</td></tr>
+    <tr><td><strong>Tailwind CSS</strong></td><td>Styling</td><td>Rapid UI development, consistent design system, minimal CSS bundle</td></tr>
+  </tbody>
+</table>
+
+<h2>6.3 Local AI Layer</h2>
+<table>
+  <thead><tr><th>Technology</th><th>Role</th><th>Justification</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Gemma 4</strong> (quantized GGUF)</td><td>Local LLM</td><td>Google's open model, strong reasoning, multiple sizes (2B/9B/27B), GGUF compatible</td></tr>
+    <tr><td><strong>llama.cpp</strong></td><td>LLM inference runtime</td><td>Efficient CPU/GPU inference, GGUF support, active community, Metal/CUDA/Vulkan backends</td></tr>
+  </tbody>
+</table>
+
+<div class="no-break">
+<h4>Model Tiers</h4>
+<table>
+  <thead><tr><th>Tier</th><th>Model</th><th>RAM</th><th>VRAM</th><th>Quality</th><th>Use Case</th></tr></thead>
+  <tbody>
+    <tr><td>Light</td><td>Gemma 4 2B (Q4_K_M)</td><td>4 GB</td><td>2 GB (optional)</td><td>Good for basic Q&amp;A</td><td>Low-end hardware, quick queries</td></tr>
+    <tr class="highlight"><td>Standard</td><td>Gemma 4 9B (Q4_K_M)</td><td>8 GB</td><td>6 GB</td><td>Recommended default</td><td>Most users, balanced quality/speed</td></tr>
+    <tr><td>High Quality</td><td>Gemma 4 27B (Q4_K_M)</td><td>16 GB</td><td>12 GB</td><td>Best local reasoning</td><td>Power users, complex analysis</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>6.4 Document Layer</h2>
+<table>
+  <thead><tr><th>Technology</th><th>Role</th><th>Justification</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Microsoft MarkItDown</strong></td><td>Document parsing</td><td>Converts PDF, DOCX, PPTX, HTML to structured Markdown; handles tables, images, formatting</td></tr>
+    <tr><td><strong>Tesseract OCR</strong></td><td>OCR fallback</td><td>For scanned PDFs where text extraction fails; mature, well-supported</td></tr>
+    <tr><td><strong>Poppler</strong></td><td>PDF rendering</td><td>High-quality PDF page rendering for viewer and annotation</td></tr>
+  </tbody>
+</table>
+<p><strong>Supported formats (v1):</strong> PDF, DOCX, PPTX, TXT, Markdown, CSV, HTML</p>
+
+<h2>6.5 Media Layer</h2>
+<table>
+  <thead><tr><th>Technology</th><th>Role</th><th>Justification</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Faster-Whisper</strong></td><td>Audio/video transcription</td><td>CTranslate2-based Whisper, 4x faster than original, local GPU-accelerated with CPU fallback</td></tr>
+    <tr><td><strong>FFmpeg</strong></td><td>Media processing</td><td>Audio extraction from video, format conversion, codec handling</td></tr>
+  </tbody>
+</table>
+<p><strong>Supported media:</strong> Video: MP4, MKV, AVI, WebM. Audio: MP3, WAV, M4A, FLAC, OGG.</p>
+<p><strong>Planned for v2:</strong> Speaker diarization via pyannote-audio, action item extraction via NLP pipeline.</p>
+
+<h2>6.6 Knowledge Layer</h2>
+<table>
+  <thead><tr><th>Technology</th><th>Role</th><th>Justification</th></tr></thead>
+  <tbody>
+    <tr><td><strong>FAISS</strong></td><td>Vector database</td><td>High-performance similarity search, mature, maintained by Meta Research, handles 1M+ vectors</td></tr>
+    <tr><td><strong>Sentence-Transformers</strong></td><td>Local embedding model</td><td>all-MiniLM-L6-v2 for document/query embeddings; 384-dimensional, fast on CPU</td></tr>
+  </tbody>
+</table>
+
+<h2>6.7 Research Layer</h2>
+<table>
+  <thead><tr><th>Component</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Research Planner</strong></td><td>Local LLM identifies knowledge gaps and generates abstract research topics</td></tr>
+    <tr><td><strong>Query Sanitizer</strong></td><td>Multi-layer pipeline that strips PII, filenames, document content, and contextual identifiers from outbound queries</td></tr>
+    <tr><td><strong>Cloud Research Agent</strong></td><td>Sends sanitized queries to configured cloud API and receives structured research reports</td></tr>
+    <tr><td><strong>Response Cache</strong></td><td>Local cache of cloud research responses to reduce API costs and latency</td></tr>
+  </tbody>
+</table>
+
+<h2>6.8 Security Layer</h2>
+<table>
+  <thead><tr><th>Component</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td><strong>AES-256-GCM Encryption</strong></td><td>Encrypts API keys and sensitive config at rest</td></tr>
+    <tr><td><strong>Windows Credential Manager</strong></td><td>Stores encryption keys using OS-level secure storage</td></tr>
+    <tr><td><strong>Audit Logger</strong></td><td>Records every outbound request with timestamp, content, destination, response, and status</td></tr>
+    <tr><td><strong>PII Detection Engine</strong></td><td>Regex + NER-based detection of names, emails, phone numbers, SSNs, account numbers</td></tr>
+    <tr><td><strong>Content Fingerprinting</strong></td><td>Compares outbound queries against document chunks to detect verbatim content leakage</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 7 ═══════════ -->
+<h1 id="s7" class="page-break"><span class="section-number">07</span> Security Architecture</h1>
+
+<h2>7.1 Security Architecture Overview</h2>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│                    SECURITY ARCHITECTURE                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────── DATA AT REST ────────────────────────────┐  │
+│  │  API Keys ──── AES-256-GCM encrypted                 │  │
+│  │  Documents ─── Tauri sandbox (no network access)      │  │
+│  │  Chat History ─ SQLite with optional encryption       │  │
+│  │  Embeddings ── FAISS index (non-reversible)           │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌──────────── DATA IN TRANSIT ─────────────────────────┐  │
+│  │  Cloud API ──── TLS 1.3 + Certificate Pinning        │  │
+│  │  Auto-Update ── Ed25519 signature verification        │  │
+│  │  All local ──── No network (process isolation)        │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌──────────── PROCESS ISOLATION ───────────────────────┐  │
+│  │  UI Process ─── React renderer (Tauri WebView)        │  │
+│  │  Backend ────── Rust process (file I/O, crypto)       │  │
+│  │  LLM ────────── Separate process (llama.cpp)          │  │
+│  │  Crash isolation: LLM crash does not affect UI        │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌──────────── PERMISSION MODEL ────────────────────────┐  │
+│  │  Tauri Allowlist ── Explicit permissions only         │  │
+│  │  No broad filesystem access                          │  │
+│  │  No broad network access                             │  │
+│  │  Scoped to user-designated directories               │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>7.2 Query Sanitization Pipeline</h2>
+<pre>
+Raw Query (from local LLM)
+  │
+  ▼
+┌─────────────────────────────────────────────┐
+│  1. FILENAME &amp; PATH STRIPPING               │
+│     Remove file names, paths, metadata      │
+│     e.g., "Tesla_Internal_Report.pdf" → ""  │
+└─────────────────────┬───────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────┐
+│  2. PII DETECTION &amp; REMOVAL                 │
+│     Regex + NER model to detect:            │
+│     • Names, emails, phone numbers          │
+│     • SSN, account numbers, addresses       │
+│     • Organization-specific identifiers     │
+└─────────────────────┬───────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────┐
+│  3. DOCUMENT CONTENT CHECK                  │
+│     Compare query against document chunks   │
+│     to detect verbatim copying              │
+│     (fuzzy matching with 80% threshold)     │
+└─────────────────────┬───────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────┐
+│  4. CONTEXTUAL RISK ASSESSMENT              │
+│     Score overall privacy risk              │
+│     (Low / Medium / High)                   │
+│     Threshold configurable by user          │
+└─────────────────────┬───────────────────────┘
+                ┌─────┴─────┐
+                ▼           ▼
+           Risk OK      Risk Too High
+                │           │
+                ▼           ▼
+           Send to      Block &amp;
+           Cloud API    Notify User
+</pre>
+
+<h2>7.3 Threat Model</h2>
+<table>
+  <thead><tr><th>Threat</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr><td>Private data in cloud query</td><td>Low</td><td>Critical</td><td>Multi-layer sanitization; user approval gate; adversarial testing; bug bounty program</td></tr>
+    <tr><td>Malicious LLM output attempting data exfiltration</td><td>Low</td><td>Critical</td><td>Sanitization checks all outbound text regardless of source; blocks queries that fail sanitization</td></tr>
+    <tr><td>API key theft</td><td>Medium</td><td>High</td><td>Encrypted at rest (AES-256-GCM), derived from machine ID + user passphrase, never logged, Windows Credential Manager</td></tr>
+    <tr><td>Man-in-the-middle on cloud API</td><td>Low</td><td>Medium</td><td>TLS 1.3 with certificate pinning for known endpoints</td></tr>
+    <tr><td>Compromised model file download</td><td>Low</td><td>High</td><td>SHA-256 checksum verification on all model downloads; signed model registry</td></tr>
+    <tr><td>Local unauthorized access</td><td>Medium</td><td>Medium</td><td>Optional app password; OS user isolation; Tauri sandbox</td></tr>
+    <tr><td>Supply chain attack (dependencies)</td><td>Low</td><td>High</td><td>Automated dependency scanning; minimal dependency tree; lock file integrity checks</td></tr>
+    <tr><td>Memory forensics</td><td>Low</td><td>Medium</td><td>Sensitive data cleared from memory after use; encrypted swap (user responsibility)</td></tr>
+  </tbody>
+</table>
+
+<h2>7.4 Compliance Mapping</h2>
+<table>
+  <thead><tr><th>Regulation</th><th>Relevance</th><th>How We Address It</th></tr></thead>
+  <tbody>
+    <tr><td><strong>GDPR (EU)</strong></td><td>User data processing</td><td>Data never leaves device; no server-side processing; full user control; right to erasure via local deletion</td></tr>
+    <tr><td><strong>CCPA (California)</strong></td><td>Consumer data privacy</td><td>No data collection by the product; all processing is local</td></tr>
+    <tr><td><strong>HIPAA (US)</strong></td><td>Protected health information</td><td>No PHI transmitted externally; local processing only; audit trail available</td></tr>
+    <tr><td><strong>SOX (US Financial)</strong></td><td>Financial data handling</td><td>Client data stays local; audit trail available; compliance report export</td></tr>
+    <tr><td><strong>FedRAMP (US Gov)</strong></td><td>Government classification</td><td>Compatible with air-gapped environments; works fully offline</td></tr>
+    <tr><td><strong>ITAR (US)</strong></td><td>Export-controlled data</td><td>No data leaves the device; works on classified networks</td></tr>
+    <tr><td><strong>EU AI Act</strong></td><td>AI transparency</td><td>Full transparency dashboard; user control over AI behavior; source attribution</td></tr>
+    <tr><td><strong>PIPL (China)</strong></td><td>Personal information protection</td><td>Data stays on device; no cross-border data transfer</td></tr>
+  </tbody>
+</table>
+
+<h2>7.5 API Key Security</h2>
+<ul>
+  <li>Stored in an encrypted local configuration file using AES-256-GCM</li>
+  <li>Encryption key derived from machine identifier + user-provided passphrase via PBKDF2 with 100,000 iterations</li>
+  <li>API keys are never logged, never included in audit trails, never sent to telemetry</li>
+  <li>Users can revoke/change keys at any time through Settings</li>
+  <li>Optional: Windows Credential Manager integration for enterprise deployments</li>
+</ul>
+
+<!-- ═══════════ SECTION 8 ═══════════ -->
+<h1 id="s8" class="page-break"><span class="section-number">08</span> Functional Requirements</h1>
+
+<h2>8.1 Feature 1: Local AI Chat</h2>
+<p>An offline-capable AI chat interface powered by a local model (Gemma 4) for general-purpose reasoning, writing, and analysis.</p>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F1.1</td><td>Open a chat window and converse with the local AI without an internet connection</td><td>Works offline; latency &lt; 5s for first token on recommended hardware; streaming display</td><td>P0</td></tr>
+    <tr><td>F1.2</td><td>Ask the local AI to summarize, analyze, or answer questions using built-in knowledge</td><td>Accurate responses; maintains context within conversation</td><td>P0</td></tr>
+    <tr><td>F1.3</td><td>Maintain multiple chat sessions with independent context</td><td>Sessions persist across restarts; no context bleed</td><td>P1</td></tr>
+    <tr><td>F1.4</td><td>Export chat conversations as text or markdown files</td><td>Full conversation with timestamps; saved to user directory</td><td>P2</td></tr>
+    <tr><td>F1.5</td><td>Adjust model parameters (temperature, max tokens, system prompt)</td><td>Changes take effect next message; invalid values rejected</td><td>P2</td></tr>
+  </tbody>
+</table>
+
+<h2>8.2 Feature 2: Document Analysis</h2>
+<p>Upload and analyze documents locally. Ask questions, get summaries, extract key insights.</p>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F2.1</td><td>Upload a PDF and have it parsed locally into text</td><td>Parsed within 10s for 50 pages; structure preserved</td><td>P0</td></tr>
+    <tr><td>F2.2</td><td>Ask natural language questions about the uploaded document</td><td>Page/section citations; latency &lt; 5s GPU / &lt; 10s CPU</td><td>P0</td></tr>
+    <tr><td>F2.3</td><td>Request a summary of the document</td><td>Generated within 15s; covers key points; configurable length</td><td>P0</td></tr>
+    <tr><td>F2.4</td><td>Upload multiple documents and ask cross-document questions</td><td>Up to 50 documents per session; relevant chunks from all</td><td>P0</td></tr>
+    <tr><td>F2.5</td><td>See which pages/sections the AI references in answers</td><td>Source citations with page number, section, source file</td><td>P1</td></tr>
+    <tr><td>F2.6</td><td>Upload DOCX, PPTX, TXT, and Markdown files</td><td>All formats parsed correctly</td><td>P1</td></tr>
+    <tr><td>F2.7</td><td>Search within the document using semantic search</td><td>Results within 500ms; ranked by relevance</td><td>P1</td></tr>
+    <tr><td>F2.8</td><td>Highlight a section and ask a question about it</td><td>Highlighted text used as context for focused Q&amp;A</td><td>P2</td></tr>
+  </tbody>
+</table>
+<h4>Technical Details</h4>
+<ul>
+  <li>PDF parsing: Microsoft MarkItDown library with Tesseract OCR fallback</li>
+  <li>Text chunking: Configurable (default 1024 tokens, 128 overlap)</li>
+  <li>Embedding: Local all-MiniLM-L6-v2 stored in FAISS</li>
+  <li>Retrieval: Top-k (default k=5) with reranking for RAG-based Q&amp;A</li>
+  <li>Maximum file size: 200 MB per file (configurable)</li>
+</ul>
+
+<h2>8.3 Feature 3: OCR Processing</h2>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F3.1</td><td>Upload a scanned PDF and have text extracted via OCR</td><td>Within 30s for 20-page scan; accuracy &gt; 90%</td><td>P0</td></tr>
+    <tr><td>F3.2</td><td>See which pages required OCR processing</td><td>Visual indicator; confidence score per page</td><td>P1</td></tr>
+    <tr><td>F3.3</td><td>Correct OCR errors in extracted text</td><td>Editable text view; corrections saved</td><td>P2</td></tr>
+  </tbody>
+</table>
+
+<h2>8.4 Feature 4: Video &amp; Audio Analysis</h2>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F4.1</td><td>Upload video file and generate transcript locally</td><td>1-hour video in &lt; 30 min GPU / &lt; 2h CPU; accuracy &gt; 95%</td><td>P0</td></tr>
+    <tr><td>F4.2</td><td>Upload audio file and generate transcript locally</td><td>Same performance targets; format conversion automatic</td><td>P0</td></tr>
+    <tr><td>F4.3</td><td>Search transcript by keyword or semantic query</td><td>Results with timestamp references</td><td>P1</td></tr>
+    <tr><td>F4.4</td><td>Ask questions about video/audio content</td><td>Q&amp;A with timestamp references</td><td>P0</td></tr>
+    <tr><td>F4.5</td><td>Generate a summary of a meeting recording</td><td>Key topics, decisions, action items</td><td>P1</td></tr>
+    <tr><td>F4.6</td><td>Click transcript segment to jump to timestamp in video</td><td>Bidirectional sync; smooth seeking</td><td>P1</td></tr>
+    <tr><td>F4.7</td><td>Export transcript as text or SRT file</td><td>Timestamps included; SRT compatible</td><td>P2</td></tr>
+  </tbody>
+</table>
+
+<h2>8.5 Feature 5: Research Assistant (Hybrid Mode)</h2>
+<p>The flagship feature — local AI analyzes, generates abstract research queries, cloud researches public info, local synthesizes final answer.</p>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F5.1</td><td>Enable "Research Mode" for any analysis session</td><td>Toggle in session settings; global default configurable</td><td>P0</td></tr>
+    <tr><td>F5.2</td><td>See research topics before they are sent to the cloud</td><td>Research Plan modal with topics, risk levels, target API</td><td>P0</td></tr>
+    <tr><td>F5.3</td><td>Approve, modify, or reject individual research queries</td><td>Checkboxes, edit, clear approve/reject</td><td>P1</td></tr>
+    <tr><td>F5.4</td><td>Configure which cloud API to use (ChatGPT, Gemini, Claude)</td><td>Provider selection in settings; per-session override</td><td>P0</td></tr>
+    <tr><td>F5.5</td><td>Provide own API keys for cloud research services</td><td>Key input with validation; encrypted storage</td><td>P0</td></tr>
+    <tr><td>F5.6</td><td>See research results before final synthesis</td><td>Research results panel with source citations</td><td>P1</td></tr>
+    <tr><td>F5.7</td><td>Disable Research Mode for fully local/offline mode</td><td>All features work without cloud</td><td>P0</td></tr>
+    <tr><td>F5.8</td><td>Set policy to auto-approve research queries</td><td>Configurable risk threshold; dashboard still shows all</td><td>P2</td></tr>
+    <tr><td>F5.9</td><td>Final answer clearly separates private and public sources</td><td>Dual-source attribution; collapsible sections</td><td>P1</td></tr>
+  </tbody>
+</table>
+
+<div class="no-break">
+<h4>Research Flow</h4>
+<pre>
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│   USER UPLOADS   │───&gt;│   LOCAL AI AGENT  │───&gt;│   ANALYSIS +     │
+│   FILES          │    │   (Gemma 4)       │    │   RESEARCH TOPICS│
+└──────────────────┘    └──────────────────┘    └────────┬─────────┘
+                                                         │
+                                              ┌──────────▼──────────┐
+                                              │  TRANSPARENCY LOGGER │
+                                              │  (User reviews query)│
+                                              └──────────┬──────────┘
+                                                         │
+                                              ┌──────────▼──────────┐
+                                              │  CLOUD RESEARCH AGENT│
+                                              │  (ChatGPT / Gemini)  │
+                                              │  Sees: research      │
+                                              │  topics ONLY         │
+                                              └──────────┬──────────┘
+                                                         │
+                                              ┌──────────▼──────────┐
+                                              │  LOCAL AI AGENT      │
+                                              │  Combines:           │
+                                              │  Private Analysis +  │
+                                              │  Public Research     │
+                                              │  = Final Answer      │
+                                              └──────────┬──────────┘
+                                                         │
+                                              ┌──────────▼──────────┐
+                                              │  USER RECEIVES       │
+                                              │  Final Answer +      │
+                                              │  Transparency Log    │
+                                              └─────────────────────┘
+</pre>
+</div>
+
+<h2>8.6 Feature 6: Transparency Dashboard</h2>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F6.1</td><td>Open dashboard showing all outbound network requests</td><td>Loads within 1s; complete history</td><td>P0</td></tr>
+    <tr><td>F6.2</td><td>See full text of each cloud research query</td><td>No truncation; copy button</td><td>P0</td></tr>
+    <tr><td>F6.3</td><td>See which cloud API received each query</td><td>Provider, model, endpoint URL</td><td>P0</td></tr>
+    <tr><td>F6.4</td><td>See full response from the cloud</td><td>Expandable for long responses</td><td>P1</td></tr>
+    <tr><td>F6.5</td><td>Filter by date, session, or destination API</td><td>Real-time filtering</td><td>P2</td></tr>
+    <tr><td>F6.6</td><td>Export log as JSON or CSV</td><td>All fields; saved to user directory</td><td>P2</td></tr>
+    <tr><td>F6.7</td><td>See a "Privacy Health" indicator</td><td>Green/Yellow/Red status</td><td>P1</td></tr>
+  </tbody>
+</table>
+
+<h2>8.7 Feature 7: Compliance Reporting</h2>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F7.1</td><td>Generate compliance report showing all data processing activities</td><td>Date range, sessions, documents, queries, sanitization results</td><td>P1</td></tr>
+    <tr><td>F7.2</td><td>Export report in PDF and CSV formats</td><td>Formatted for regulatory submission</td><td>P1</td></tr>
+    <tr><td>F7.3</td><td>Configure report templates for specific regulations</td><td>Pre-built templates (HIPAA, SOX, GDPR); customizable</td><td>P2</td></tr>
+  </tbody>
+</table>
+
+<h2>8.8 Feature 8: Model Management</h2>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F8.1</td><td>See list of available models with size, capabilities, HW requirements</td><td>Name, size, quantization, RAM, VRAM, quality rating</td><td>P0</td></tr>
+    <tr><td>F8.2</td><td>Download additional models from registry</td><td>Progress bar; SHA-256 checksum; resume on interruption</td><td>P1</td></tr>
+    <tr><td>F8.3</td><td>Switch between local models</td><td>Switch within 10s; context preserved</td><td>P1</td></tr>
+    <tr><td>F8.4</td><td>See hardware specs and receive recommendations</td><td>Auto-detect CPU, RAM, GPU, VRAM; recommend tier</td><td>P1</td></tr>
+    <tr><td>F8.5</td><td>Import custom GGUF model file</td><td>File validation; appears in list</td><td>P2</td></tr>
+  </tbody>
+</table>
+
+<h2>8.9 Feature 9: Settings &amp; Configuration</h2>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F9.1</td><td>Configure cloud API keys (OpenAI, Google, Anthropic)</td><td>Key input with validation; encrypted storage; test connection</td><td>P0</td></tr>
+    <tr><td>F9.2</td><td>Select preferred cloud research provider</td><td>Persists; per-session override</td><td>P0</td></tr>
+    <tr><td>F9.3</td><td>Enable/disable research mode globally</td><td>Applies to new sessions</td><td>P0</td></tr>
+    <tr><td>F9.4</td><td>Set privacy level: Strict / Balanced / Permissive</td><td>Strict: approve all; Balanced: approve medium/high; Permissive: auto-approve</td><td>P1</td></tr>
+    <tr><td>F9.5</td><td>Configure model parameters</td><td>Advanced settings panel; optimized defaults</td><td>P2</td></tr>
+    <tr><td>F9.6</td><td>Set monthly API spending limit</td><td>Tracked; warning at 80%; hard stop at 100%</td><td>P1</td></tr>
+    <tr><td>F9.7</td><td>Choose application theme (light/dark)</td><td>System detection; manual override; persists</td><td>P2</td></tr>
+    <tr><td>F9.8</td><td>Configure local model inference settings</td><td>Thread count, context window, GPU layers, batch size</td><td>P2</td></tr>
+    <tr><td>F9.9</td><td>Enable/disable automatic telemetry</td><td>Default: OFF. Opt-in only. Local-only diagnostics</td><td>P1</td></tr>
+  </tbody>
+</table>
+
+<h2>8.10 Feature 10: Local Knowledge Base</h2>
+<table>
+  <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr><td>F10.1</td><td>Build persistent knowledge base from uploaded documents</td><td>Auto-indexed on upload; embeddings in FAISS</td><td>P1</td></tr>
+    <tr><td>F10.2</td><td>Search across all indexed documents using semantic search</td><td>Ranked results; latency &lt; 500ms</td><td>P1</td></tr>
+    <tr><td>F10.3</td><td>Manage knowledge base (remove documents, rebuild index)</td><td>Remove deletes chunks/embeddings; rebuild re-indexes</td><td>P1</td></tr>
+    <tr><td>F10.4</td><td>Ask questions drawing from entire knowledge base</td><td>RAG spans all documents; multi-doc synthesis</td><td>P1</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 9 ═══════════ -->
+<h1 id="s9" class="page-break"><span class="section-number">09</span> Non-Functional Requirements</h1>
+
+<h2>9.1 Performance</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Target (GPU)</th><th>Target (CPU)</th><th>Measurement</th></tr></thead>
+  <tbody>
+    <tr><td>App startup time</td><td>&lt; 3 seconds</td><td>&lt; 5 seconds</td><td>Cold start to interactive UI</td></tr>
+    <tr><td>Local LLM first token</td><td>&lt; 2 seconds</td><td>&lt; 5 seconds</td><td>Time to first streaming token</td></tr>
+    <tr><td>LLM generation speed</td><td>&gt; 20 tok/s</td><td>&gt; 5 tok/s</td><td>Streaming generation</td></tr>
+    <tr><td>Document parsing (50-page PDF)</td><td>&lt; 10 seconds</td><td>&lt; 15 seconds</td><td>Upload to fully indexed</td></tr>
+    <tr><td>Video transcription (1hr)</td><td>&lt; 30 minutes</td><td>&lt; 2 hours</td><td>End-to-end</td></tr>
+    <tr><td>FAISS query latency</td><td colspan="2">&lt; 50ms</td><td>Vector similarity search</td></tr>
+    <tr><td>Cloud API roundtrip</td><td colspan="2">&lt; 5 seconds</td><td>Request to response</td></tr>
+    <tr><td>Memory usage (idle)</td><td colspan="2">&lt; 500 MB</td><td>Application + UI</td></tr>
+  </tbody>
+</table>
+
+<h2>9.2 Reliability</h2>
+<table>
+  <thead><tr><th>Requirement</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr><td>Crash-free rate</td><td>&gt; 99.9% per session</td></tr>
+    <tr><td>Data durability</td><td>Zero data loss for saved sessions</td></tr>
+    <tr><td>Graceful degradation</td><td>All features work offline</td></tr>
+    <tr><td>Error recovery</td><td>Recovers from model crashes, API failures, corrupt files</td></tr>
+    <tr><td>Auto-save</td><td>Every 30 seconds and on every user action</td></tr>
+  </tbody>
+</table>
+
+<h2>9.3 Scalability</h2>
+<table>
+  <thead><tr><th>Dimension</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr><td>Max document size</td><td>200 MB per file</td></tr>
+    <tr><td>Max documents per session</td><td>50</td></tr>
+    <tr><td>Max FAISS index size</td><td>1M vectors</td></tr>
+    <tr><td>Max conversation history</td><td>100 messages per session</td></tr>
+    <tr><td>Max video file size</td><td>4 GB per file</td></tr>
+  </tbody>
+</table>
+
+<h2>9.4 Security</h2>
+<table>
+  <thead><tr><th>Requirement</th><th>Implementation</th></tr></thead>
+  <tbody>
+    <tr><td>API key encryption</td><td>AES-256-GCM with PBKDF2-derived key</td></tr>
+    <tr><td>Network isolation for documents</td><td>Tauri sandbox prevents document content from reaching network stack</td></tr>
+    <tr><td>Process isolation</td><td>LLM in separate process; crash isolation</td></tr>
+    <tr><td>Permission model</td><td>Tauri allowlist-based permissions</td></tr>
+    <tr><td>Update security</td><td>Ed25519 signatures</td></tr>
+    <tr><td>Dependency security</td><td>Automated scanning; minimal tree; lock file integrity</td></tr>
+  </tbody>
+</table>
+
+<h2>9.5 Accessibility</h2>
+<table>
+  <thead><tr><th>Requirement</th><th>Standard</th></tr></thead>
+  <tbody>
+    <tr><td>WCAG compliance</td><td>2.1 AA minimum</td></tr>
+    <tr><td>Keyboard navigation</td><td>Full for all features</td></tr>
+    <tr><td>Screen reader</td><td>ARIA labels on all interactive elements</td></tr>
+    <tr><td>High contrast</td><td>Separate high-contrast theme</td></tr>
+    <tr><td>Font size</td><td>Adjustable 12pt–24pt</td></tr>
+    <tr><td>Reduced motion</td><td>Option to disable all animations</td></tr>
+  </tbody>
+</table>
+
+<h2>9.6 Offline Operation</h2>
+<table>
+  <thead><tr><th>Requirement</th><th>Implementation</th></tr></thead>
+  <tbody>
+    <tr><td>Core features</td><td>Chat, document analysis, video transcription — all fully offline</td></tr>
+    <tr><td>Cloud features</td><td>Research Mode optional; disabled gracefully when offline</td></tr>
+    <tr><td>Model availability</td><td>At least one model must be available for app to function</td></tr>
+    <tr><td>Graceful degradation</td><td>Cloud API failures → automatic local-only fallback with notification</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 10 ═══════════ -->
+<h1 id="s10" class="page-break"><span class="section-number">10</span> MVP Definition</h1>
+
+<h2>10.1 MVP v0.1 — Internal Alpha (Month 4)</h2>
+<p><strong>Goal:</strong> Prove the core architecture works. Demonstrate local document analysis with basic cloud research.</p>
+<h4>Included:</h4>
+<ul>
+  <li>Local AI chat with Gemma 4 (9B model)</li>
+  <li>PDF document upload and parsing (MarkItDown)</li>
+  <li>RAG-based Q&amp;A over single documents</li>
+  <li>Basic Research Mode (OpenAI API only)</li>
+  <li>Simple sanitization (filename stripping, basic PII regex)</li>
+  <li>Transparency log (basic list view)</li>
+  <li>Settings (API key input, model selection)</li>
+</ul>
+<h4>Excluded:</h4>
+<ul>
+  <li>Video/audio analysis, multi-document support, OCR, advanced sanitization, compliance reporting, model management, export, accessibility, enterprise features</li>
+</ul>
+<h4>Success Criteria:</h4>
+<ul>
+  <li>User can upload PDF, ask questions, get relevant answers</li>
+  <li>Research Mode works; zero document content transmitted (verified by network monitoring)</li>
+  <li>Runs on Windows 10 with 8 GB RAM</li>
+</ul>
+
+<h2>10.2 Beta v0.5 — Public Beta (Month 7)</h2>
+<p><strong>Goal:</strong> Feature-complete for individual users. Ready for public feedback.</p>
+<h4>Added to v0.1:</h4>
+<ul>
+  <li>Multi-document support (up to 10 per session)</li>
+  <li>DOCX, PPTX, TXT, Markdown support</li>
+  <li>Video and audio transcription (Faster-Whisper)</li>
+  <li>Advanced sanitization (PII NER, content fingerprinting, risk scoring)</li>
+  <li>Full Transparency Dashboard (filtering, export, privacy health)</li>
+  <li>Research Plan modal (user approval flow)</li>
+  <li>Multiple cloud providers (OpenAI, Gemini)</li>
+  <li>Model management, export, accessibility, light/dark theme, basic compliance report</li>
+</ul>
+<h4>Success Criteria:</h4>
+<ul>
+  <li>500+ beta users; NPS &gt; 40; zero privacy incidents; &lt; 1% crash rate</li>
+  <li>Average research quality rating &gt; 3.5/5</li>
+</ul>
+
+<h2>10.3 Public v1.0 — General Availability (Month 12)</h2>
+<p><strong>Goal:</strong> Production-ready for individual and enterprise customers.</p>
+<h4>Added to v0.5:</h4>
+<ul>
+  <li>OCR (Tesseract), full knowledge base, all three cloud providers, custom model import, compliance reporting (HIPAA, SOX, GDPR), API spending limits, local telemetry (opt-in), enterprise features, performance optimization, auto-update, comprehensive documentation</li>
+</ul>
+<h4>Success Criteria:</h4>
+<ul>
+  <li>10,000+ MAU; 1,000+ paid licenses; 5+ enterprise pilots; NPS &gt; 50</li>
+  <li>Zero privacy incidents; &lt; 0.1% crash rate; research quality &gt; 4.0/5</li>
+</ul>
+
+<!-- ═══════════ SECTION 11 ═══════════ -->
+<h1 id="s11" class="page-break"><span class="section-number">11</span> Engineering Execution Plan</h1>
+
+<h2>Phase 0 — Research &amp; Scaffolding (Month 0)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>Validate Gemma 4 performance on target hardware; establish project structure; set up CI/CD; create design system; benchmark inference</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Tauri + React scaffold; CI/CD (GitHub Actions); design system; hardware benchmark report; architecture decision records</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>None</td></tr>
+    <tr><td><strong>Risks</strong></td><td>Gemma 4 performance insufficient on min HW → test early, prepare alternatives; Tauri 2.0 learning curve → 2 weeks ramp-up</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>"Hello World" Tauri app running; Gemma 4 9B &gt; 10 tok/s on recommended HW; CI/CD green</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 1 — Local Chat (Months 1–2)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>Local LLM integration (llama.cpp via Rust bindings); chat UI with streaming; session management and persistence</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Chat interface with streaming; llama.cpp integration; session CRUD; model parameters; history persistence (SQLite)</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 0 complete</td></tr>
+    <tr><td><strong>Risks</strong></td><td>llama.cpp Rust binding instability → evaluate candle/ort as backup; memory management for large models → implement load/unload with monitoring</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>Offline chat works; &lt; 2s first token (GPU); sessions persist; no memory leaks over 30 min</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 2 — Document Processing (Months 2–3)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>Document parsing (MarkItDown); RAG pipeline (chunking, embedding, FAISS, retrieval); document viewer</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>PDF/DOCX/PPTX/TXT/MD parsing; text chunking; local embeddings; FAISS integration; RAG Q&amp;A; document viewer with page navigation</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 1 complete</td></tr>
+    <tr><td><strong>Risks</strong></td><td>MarkItDown edge cases → Tesseract OCR fallback; FAISS memory for large sets → index sharding</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>50-page PDF parsed &amp; indexed &lt; 10s; page/section citations; FAISS search &lt; 50ms; parse success &gt; 95%</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 3 — RAG Refinement (Month 3)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>Optimize chunking per document type; multi-document cross-referencing; improve retrieval (reranking, hybrid search)</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Optimized chunking; multi-document sessions; hybrid search; reranking; source attribution</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 2 complete</td></tr>
+    <tr><td><strong>Risks</strong></td><td>Poor retrieval quality for certain docs → evaluate different embeddings; cross-doc noise → query decomposition</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>Multi-doc Q&amp;A with accurate cross-referencing; answer relevance &gt; 80%; 100% source attribution</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 4 — Research Agent (Months 3–4)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>Research Planner; Query Sanitizer; Cloud Research Agent (OpenAI); Research Plan modal; response cache; final synthesis</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Full research flow from planning to synthesis; sanitization pipeline; OpenAI integration; approval UI; research cache</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 2 complete (RAG needed for research planning)</td></tr>
+    <tr><td><strong>Risks</strong></td><td>Poor research topic generation → prompt engineering iteration; sanitization misses → adversarial testing with 10K+ cases</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>Relevant topics &gt; 80%; sanitization catches 99.99% PII; zero document content in cloud requests; research quality &gt; 3.5/5</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 5 — Security Hardening (Months 4–5)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>AES-256-GCM encryption; Transparency Dashboard; advanced sanitization (NER, fingerprinting); security audit</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Encrypted API keys; Windows Credential Manager; full dashboard; NER PII detection; content fingerprinting; audit report</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 4 complete</td></tr>
+    <tr><td><strong>Risks</strong></td><td>NER false positives → tune threshold, allow whitelisting; encryption perf impact → benchmark; only small data encrypted</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>API keys encrypted &amp; never logged; 100% requests in dashboard; zero critical vulns in security audit</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 6 — Media &amp; Polish (Months 5–7)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>Video/audio transcription; video player with transcript sync; OCR; UX refinement; accessibility; multi-cloud providers</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Faster-Whisper integration; video player; Tesseract OCR; Gemini &amp; Claude APIs; WCAG 2.1 AA; export functionality</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 5 complete</td></tr>
+    <tr><td><strong>Risks</strong></td><td>CPU transcription too slow → offer base model; Tesseract accuracy → evaluate cloud OCR (v2)</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>1hr video &lt; 30 min GPU; OCR &gt; 90%; all 3 providers functional; WCAG 2.1 AA verified</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 7 — Launch Preparation (Months 7–8)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>Beta testing (500+ users); bug fixes; performance optimization; documentation; marketing; auto-update</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Public beta; user guide, admin guide, API docs; marketing website; auto-update (Ed25519 signed)</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 6 complete</td></tr>
+    <tr><td><strong>Risks</strong></td><td>Fundamental UX issues → early dogfooding; min HW performance → adjust specs if needed</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>500+ beta users; NPS &gt; 40; zero privacy incidents; &lt; 1% crash rate</td></tr>
+  </tbody>
+</table>
+
+<h2>Phase 8 — GA &amp; Enterprise (Months 8–12)</h2>
+<table>
+  <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Objectives</strong></td><td>v1.0 release; enterprise features; compliance reporting; model ecosystem; marketing launch</td></tr>
+    <tr><td><strong>Deliverables</strong></td><td>Stable release; team deployment; compliance templates; custom model import; model registry; enterprise sales materials</td></tr>
+    <tr><td><strong>Dependencies</strong></td><td>Phase 7 complete</td></tr>
+    <tr><td><strong>Risks</strong></td><td>Long enterprise sales cycles → start outreach during beta; model ecosystem complexity → limit to GGUF initially</td></tr>
+    <tr><td><strong>Success Criteria</strong></td><td>10,000+ MAU; 1,000+ paid licenses; 5+ enterprise pilots; NPS &gt; 50; zero privacy incidents</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 12 ═══════════ -->
+<h1 id="s12" class="page-break"><span class="section-number">12</span> Repository Architecture</h1>
+
+<pre>
+orvika-ai/
+├── README.md
+├── LICENSE
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── tailwind.config.ts
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                    # Build, test, lint on every push
+│       ├── release.yml               # Build and sign release artifacts
+│       └── security.yml              # Dependency scanning, SAST
+│
+├── src-tauri/                        # Rust backend (Tauri)
+│   ├── Cargo.toml
+│   ├── tauri.conf.json
+│   ├── src/
+│   │   ├── main.rs                   # Tauri entry point
+│   │   ├── lib.rs
+│   │   ├── commands/                 # Tauri IPC command handlers
+│   │   │   ├── mod.rs
+│   │   │   ├── chat.rs
+│   │   │   ├── document.rs
+│   │   │   ├── research.rs
+│   │   │   ├── model.rs
+│   │   │   └── settings.rs
+│   │   ├── llm/                     # Local LLM integration
+│   │   │   ├── mod.rs
+│   │   │   ├── runtime.rs           # llama.cpp wrapper
+│   │   │   ├── model_manager.rs
+│   │   │   └── inference.rs
+│   │   ├── document/                # Document processing
+│   │   │   ├── mod.rs
+│   │   │   ├── parser.rs            # MarkItDown integration
+│   │   │   ├── chunker.rs
+│   │   │   ├── ocr.rs               # Tesseract OCR
+│   │   │   └── embeddings.rs
+│   │   ├── media/                   # Video/audio processing
+│   │   │   ├── mod.rs
+│   │   │   ├── transcriber.rs       # Faster-Whisper
+│   │   │   ├── extractor.rs         # FFmpeg
+│   │   │   └── player.rs
+│   │   ├── vector_db/               # FAISS vector database
+│   │   │   ├── mod.rs
+│   │   │   ├── index.rs
+│   │   │   ├── search.rs
+│   │   │   └── storage.rs
+│   │   ├── research/                # Research agent
+│   │   │   ├── mod.rs
+│   │   │   ├── planner.rs
+│   │   │   ├── sanitizer.rs
+│   │   │   ├── cloud_agent.rs
+│   │   │   ├── synthesis.rs
+│   │   │   └── cache.rs
+│   │   ├── security/                # Security layer
+│   │   │   ├── mod.rs
+│   │   │   ├── encryption.rs
+│   │   │   ├── credential.rs
+│   │   │   ├── audit.rs
+│   │   │   └── pii_detector.rs
+│   │   ├── db/                      # Database layer
+│   │   │   ├── mod.rs
+│   │   │   ├── schema.rs
+│   │   │   ├── migrations.rs
+│   │   │   ├── chat_repository.rs
+│   │   │   ├── document_repository.rs
+│   │   │   ├── research_repository.rs
+│   │   │   ├── audit_repository.rs
+│   │   │   └── settings_repository.rs
+│   │   └── utils/
+│   │       ├── mod.rs
+│   │       ├── logger.rs
+│   │       ├── error.rs
+│   │       └── config.rs
+│   └── migrations/
+│
+├── src/                             # React frontend (TypeScript)
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── components/
+│   │   ├── ui/                      # Design system primitives
+│   │   ├── layout/                  # Layout components
+│   │   └── shared/                  # Shared feature components
+│   ├── features/
+│   │   ├── chat/
+│   │   ├── documents/
+│   │   ├── media/
+│   │   ├── research/
+│   │   ├── transparency/
+│   │   ├── models/
+│   │   └── settings/
+│   ├── stores/                      # State management
+│   ├── hooks/
+│   ├── types/
+│   └── utils/
+│
+├── models/                          # Model config &amp; prompts
+│   ├── registry.json
+│   └── prompts/
+│       ├── chat.system.txt
+│       ├── analysis.system.txt
+│       ├── research_planner.system.txt
+│       ├── sanitizer.system.txt
+│       └── synthesis.system.txt
+│
+├── security/                        # Security testing
+│   ├── sanitization_test_suite/
+│   ├── threat_model.md
+│   ├── security_audit_checklist.md
+│   └── penetration_test_plan.md
+│
+├── tests/                           # Test suites
+│   ├── unit/
+│   ├── integration/
+│   ├── security/
+│   ├── performance/
+│   └── e2e/
+│
+├── docs/                            # Documentation
+│   ├── architecture.md
+│   ├── user-guide.md
+│   ├── admin-guide.md
+│   ├── api-reference.md
+│   ├── security-model.md
+│   ├── compliance-guide.md
+│   └── contributing.md
+│
+└── scripts/                         # Build scripts
+    ├── build.sh
+    ├── download-model.sh
+    ├── benchmark.sh
+    └── generate-compliance-report.sh
+</pre>
+
+<!-- ═══════════ SECTION 13 ═══════════ -->
+<h1 id="s13" class="page-break"><span class="section-number">13</span> Database Design</h1>
+
+<h2>13.1 Storage Technology</h2>
+<ul>
+  <li><strong>Primary database:</strong> SQLite (local, zero-config, embedded)</li>
+  <li><strong>Vector database:</strong> FAISS (for embeddings)</li>
+  <li><strong>File storage:</strong> Local filesystem (Tauri sandboxed)</li>
+  <li><strong>Config storage:</strong> Encrypted JSON file (API keys, settings)</li>
+</ul>
+
+<h2>13.2 Schema Design</h2>
+
+<h3>Sessions Table</h3>
+<pre><code>CREATE TABLE sessions (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    research_mode_enabled BOOLEAN NOT NULL DEFAULT 0,
+    cloud_provider TEXT,
+    privacy_level TEXT NOT NULL DEFAULT 'balanced',
+    model_id TEXT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT 1
+);</code></pre>
+
+<h3>Messages Table</h3>
+<pre><code>CREATE TABLE messages (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+    content TEXT NOT NULL,
+    source_type TEXT CHECK (source_type IN ('local', 'research', 'mixed', NULL)),
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    tokens_used INTEGER,
+    latency_ms INTEGER
+);
+CREATE INDEX idx_messages_session ON messages(session_id);</code></pre>
+
+<h3>Documents Table</h3>
+<pre><code>CREATE TABLE documents (
+    id TEXT PRIMARY KEY,
+    session_id TEXT REFERENCES sessions(id),
+    filename TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    file_type TEXT NOT NULL,
+    page_count INTEGER,
+    chunk_count INTEGER NOT NULL DEFAULT 0,
+    parsed_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    is_indexed BOOLEAN NOT NULL DEFAULT 0,
+    index_path TEXT
+);
+CREATE INDEX idx_documents_session ON documents(session_id);</code></pre>
+
+<h3>Document Chunks Table</h3>
+<pre><code>CREATE TABLE document_chunks (
+    id TEXT PRIMARY KEY,
+    document_id TEXT NOT NULL REFERENCES documents(id),
+    chunk_index INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    page_number INTEGER,
+    section_heading TEXT,
+    embedding_id INTEGER,
+    token_count INTEGER NOT NULL
+);
+CREATE INDEX idx_chunks_document ON document_chunks(document_id);</code></pre>
+
+<h3>Research Sessions Table</h3>
+<pre><code>CREATE TABLE research_sessions (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    message_id TEXT NOT NULL REFERENCES messages(id),
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    status TEXT NOT NULL CHECK (status IN ('planning','approved','in_progress','completed','failed')),
+    total_queries INTEGER NOT NULL DEFAULT 0,
+    completed_queries INTEGER NOT NULL DEFAULT 0
+);</code></pre>
+
+<h3>Research Queries Table</h3>
+<pre><code>CREATE TABLE research_queries (
+    id TEXT PRIMARY KEY,
+    research_session_id TEXT NOT NULL REFERENCES research_sessions(id),
+    query_index INTEGER NOT NULL,
+    topic TEXT NOT NULL,
+    raw_query TEXT,
+    sanitized_query TEXT NOT NULL,
+    risk_level TEXT NOT NULL CHECK (risk_level IN ('low', 'medium', 'high')),
+    status TEXT NOT NULL CHECK (status IN ('pending','approved','rejected','sent','completed','failed','blocked')),
+    user_approved BOOLEAN,
+    cloud_provider TEXT,
+    cloud_model TEXT,
+    response TEXT,
+    tokens_used INTEGER,
+    latency_ms INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    completed_at TEXT
+);</code></pre>
+
+<h3>Audit Log Table</h3>
+<pre><code>CREATE TABLE audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+    event_type TEXT NOT NULL,
+    session_id TEXT,
+    details TEXT NOT NULL,       -- JSON object
+    outbound_content TEXT,       -- Full content sent to cloud
+    destination TEXT,            -- Cloud API endpoint
+    response_summary TEXT,
+    sanitization_result TEXT,
+    risk_level TEXT
+);
+CREATE INDEX idx_audit_timestamp ON audit_log(timestamp);
+CREATE INDEX idx_audit_session ON audit_log(session_id);</code></pre>
+
+<h3>Settings &amp; API Keys Tables</h3>
+<pre><code>CREATE TABLE settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    encrypted BOOLEAN NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE api_keys (
+    provider TEXT PRIMARY KEY,
+    encrypted_key TEXT NOT NULL,
+    iv TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_used_at TEXT
+);</code></pre>
+
+<!-- ═══════════ SECTION 14 ═══════════ -->
+<h1 id="s14" class="page-break"><span class="section-number">14</span> API Design</h1>
+
+<h2>14.1 Local APIs (Tauri IPC Commands)</h2>
+
+<h3>Chat APIs</h3>
+<pre><code>// Create a new chat session
+invoke('create_session', { name: string, modelId: string }): Promise&lt;Session&gt;
+
+// Send a message and receive streaming response
+invoke('send_message', { sessionId: string, content: string }): Promise&lt;string&gt;
+// Returns stream ID; tokens received via event: `stream:{streamId}`
+
+// Get chat history
+invoke('get_messages', { sessionId: string, limit?: number, offset?: number }): Promise&lt;Message[]&gt;
+
+// List all sessions
+invoke('list_sessions'): Promise&lt;Session[]&gt;
+
+// Delete a session
+invoke('delete_session', { sessionId: string }): Promise&lt;void&gt;</code></pre>
+
+<h4>Message Type</h4>
+<pre><code>interface Message {
+  id: string;
+  sessionId: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  sourceType?: 'local' | 'research' | 'mixed';
+  sources?: SourceCitation[];
+  createdAt: string;
+  tokensUsed?: number;
+  latencyMs?: number;
+}
+
+interface SourceCitation {
+  type: 'document' | 'research';
+  sourceName: string;
+  pageNumber?: number;
+  sectionHeading?: string;
+  excerpt: string;
+}</code></pre>
+
+<h3>Document APIs</h3>
+<pre><code>invoke('upload_document', { sessionId: string, filePath: string }): Promise&lt;Document&gt;
+invoke('query_document', { sessionId: string, query: string }): Promise&lt;Answer&gt;
+invoke('list_documents', { sessionId: string }): Promise&lt;Document[]&gt;
+invoke('delete_document', { documentId: string }): Promise&lt;void&gt;
+invoke('search_documents', { sessionId: string, query: string, limit?: number }): Promise&lt;SearchResult[]&gt;</code></pre>
+
+<h3>Research APIs</h3>
+<pre><code>invoke('generate_research_plan', { sessionId: string, messageId: string }): Promise&lt;ResearchPlan&gt;
+invoke('approve_research', { researchSessionId: string, approvals: QueryApproval[] }): Promise&lt;void&gt;
+invoke('execute_research', { researchSessionId: string }): Promise&lt;void&gt;
+invoke('get_research_results', { researchSessionId: string }): Promise&lt;ResearchResult[]&gt;
+invoke('synthesize_answer', { sessionId: string, researchSessionId: string }): Promise&lt;string&gt;</code></pre>
+
+<h4>Research Types</h4>
+<pre><code>interface ResearchPlan {
+  researchSessionId: string;
+  knowledgeGaps: string[];
+  queries: ResearchQuery[];
+}
+
+interface ResearchQuery {
+  id: string;
+  topic: string;
+  query: string;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
+interface QueryApproval {
+  queryId: string;
+  action: 'approve' | 'reject' | 'modify';
+  modifiedQuery?: string;
+}</code></pre>
+
+<h3>Model &amp; Transparency APIs</h3>
+<pre><code>// Models
+invoke('list_models'): Promise&lt;Model[]&gt;
+invoke('get_hardware_info'): Promise&lt;HardwareInfo&gt;
+invoke('download_model', { modelId: string }): Promise&lt;void&gt;
+invoke('switch_model', { modelId: string }): Promise&lt;void&gt;
+invoke('import_model', { filePath: string, name: string }): Promise&lt;Model&gt;
+
+// Transparency
+invoke('get_audit_log', { filters?: AuditFilters }): Promise&lt;AuditEntry[]&gt;
+invoke('export_audit_log', { format: 'json' | 'csv', filters?: AuditFilters }): Promise&lt;string&gt;
+invoke('get_privacy_health'): Promise&lt;PrivacyHealth&gt;
+invoke('generate_compliance_report', { type: 'hipaa' | 'sox' | 'gdpr', dateRange: DateRange }): Promise&lt;ComplianceReport&gt;</code></pre>
+
+<h2>14.2 Cloud Research API</h2>
+<h4>Request (sent to OpenAI/Gemini/Claude)</h4>
+<pre><code>{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a research assistant. Provide factual, publicly available information with source citations."
+    },
+    {
+      "role": "user",
+      "content": "What are the latest trends in global SaaS customer retention strategies for 2025-2026?"
+    }
+  ],
+  "temperature": 0.3,
+  "max_tokens": 2000
+}</code></pre>
+
+<h4>Response (logged in audit trail)</h4>
+<pre><code>{
+  "provider": "openai",
+  "model": "gpt-4o",
+  "query": "What are the latest trends in global SaaS customer retention strategies for 2025-2026?",
+  "response": "Based on publicly available research...",
+  "sources": ["Gartner 2026 Report", "McKinsey SaaS Survey 2025"],
+  "tokensUsed": 518,
+  "latencyMs": 1800,
+  "timestamp": "2026-05-30T14:34:00Z"
+}</code></pre>
+
+<!-- ═══════════ SECTION 15 ═══════════ -->
+<h1 id="s15" class="page-break"><span class="section-number">15</span> UI/UX Specification</h1>
+
+<h2>15.1 Design Philosophy</h2>
+<p><strong>Trustworthy, professional, and calm</strong> — like a well-designed research tool. Editorial/Institutional design direction: clean layouts, generous whitespace, strong typographic hierarchy, muted palette with deep green accent (#1a4a3a).</p>
+
+<h4>Typography</h4>
+<ul>
+  <li>Headings: Cormorant Garamond (serif, editorial)</li>
+  <li>Body: Source Serif 4 (readable, professional)</li>
+  <li>Code/Data: DM Mono (clean monospace)</li>
+</ul>
+
+<h2>15.2 Main Chat Interface</h2>
+<pre>
+┌──────────────────────────────────────────────────────────────────┐
+│  ≡ Menu                              ORVIKA AI   ⚙    │
+├────────────┬─────────────────────────────────────────────────────┤
+│            │                                                     │
+│  SESSIONS  │  📄 Company_Financial_Report.pdf                    │
+│            │  Uploaded: May 30, 2026 │ 47 pages │ 2.3 MB        │
+│  &gt; Q3      │                                                     │
+│    Analysis│  ┌──────────────────────────────────────────────┐   │
+│            │  │ What are the key revenue trends and how do   │   │
+│  &gt; Market  │  │ they compare to industry benchmarks?         │   │
+│    Research│  └──────────────────────────────────────────────┘   │
+│            │                                                     │
+│  + New     │  ┌──────────────────────────────────────────────┐   │
+│    Session │  │ Based on your report (Q3 Financial Report):   │   │
+│            │  │ Revenue grew 23% YoY to $4.2B... [pg. 12]    │   │
+│            │  │                                                │   │
+│            │  │ Based on public research:                     │   │
+│            │  │ Industry avg growth was 15%                   │   │
+│            │  │ [Source: Gartner 2026]...                     │   │
+│            │  └──────────────────────────────────────────────┘   │
+│            │                                                     │
+│            │  ┌──────────────────────────────────────────────┐   │
+│            │  │ Ask a question about your documents...  Send │   │
+│            │  └──────────────────────────────────────────────┘   │
+├────────────┴─────────────────────────────────────────────────────┤
+│  🔒 Private Mode │ 📊 0 Cloud Requests │ 🟢 Privacy: OK        │
+└──────────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>15.3 Document Workspace</h2>
+<pre>
+┌──────────────────────────────────────────────────────────────────┐
+│  📄 Company_Financial_Report.pdf          [✕ Close] [Export]     │
+├────────────────────────────────┬─────────────────────────────────┤
+│  PAGE 12 of 47                 │  AI ANALYSIS                    │
+│  ──────────────────────────    │  ──────────────────────────     │
+│  Q3 2026 Revenue Summary       │  Revenue grew 23% YoY to       │
+│                                │  $4.2B, primarily driven by     │
+│  Total Revenue: $4.2B          │  enterprise segment (+31%)...   │
+│  YoY Growth: 23%               │                                 │
+│  Enterprise: +31%              │  Source: Page 12, Section        │
+│  SMB: +14%                     │  "Q3 Revenue Summary"           │
+├────────────────────────────────┴─────────────────────────────────┤
+│  ◄ Prev Page    Page 12/47    Next Page ►     Zoom: 100%        │
+└──────────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>15.4 Research Planner</h2>
+<pre>
+┌──────────────────────────────────────────────────────────────────┐
+│                                                         [✕]      │
+│  RESEARCH PLAN                                                   │
+│  ════════════════                                                │
+│                                                                  │
+│  Based on your document, I've identified areas where public      │
+│  research would strengthen the analysis:                         │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │ ☑ 1. Industry Growth Trends                                │  │
+│  │   Query: "Global SaaS market growth rate 2025-2026"        │  │
+│  │   Risk Level: 🟢 Low                                       │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │ ☑ 2. Customer Retention Strategies                         │  │
+│  │   Query: "Best practices for SaaS customer retention 2026" │  │
+│  │   Risk Level: 🟢 Low                                       │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ☐ Auto-approve low-risk queries in this session                │
+│  Cloud Provider: [OpenAI GPT-4o ▼]                              │
+│                                                                  │
+│       [ Cancel ]                    [ Approve &amp; Research → ]     │
+└──────────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>15.5 Transparency Dashboard</h2>
+<pre>
+┌──────────────────────────────────────────────────────────────────┐
+│  TRANSPARENCY DASHBOARD                               [Export]   │
+│  ══════════════════════                                          │
+│  Privacy Status: 🟢 No private data transmitted                  │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ SUMMARY                                                     │ │
+│  │ Total Cloud Requests: 12  │  Sessions with Research: 4     │ │
+│  │ API Provider: OpenAI      │  Data Transmitted: 2.1 KB      │ │
+│  │ Sanitization Failures: 0  │  Blocked Queries: 0            │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│  REQUEST LOG                                                     │
+│  ─────────────────────────────────────────────────────────────── │
+│  May 30, 2026 — 2:34 PM                                         │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ → OpenAI GPT-4o                                             │ │
+│  │ Query: "Global SaaS market growth rate 2025-2026"           │ │
+│  │ Risk: 🟢 Low │ Sanitized: ✅ │ Tokens: 342 │ Latency: 1.2s │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>15.6 Settings &amp; Model Manager</h2>
+<pre>
+┌──────────────────────────────────────────┐  ┌──────────────────────────────────────────┐
+│  SETTINGS                                │  │  MODEL MANAGER                           │
+│  ┌──────────┬───────────────────────────┐│  │  YOUR HARDWARE                           │
+│  │ Cloud API│  Provider: [OpenAI ▼]     ││  │  CPU: i7-13700K │ RAM: 32GB │ RTX 4070  │
+│  │ Privacy  │  API Key: [••••] [Test]   ││  │  Recommended: Gemma 4 9B                │
+│  │ Models   │                           ││  │                                          │
+│  │ Inference│  PRIVACY LEVEL            ││  │  AVAILABLE MODELS                        │
+│  │ Appearance│ ○ Strict                 ││  │  ● Gemma 4 9B Q4_K_M    [Active]       │
+│  │ Advanced │  ● Balanced               ││  │  ○ Gemma 4 27B Q4_K_M  [Download]      │
+│  │          │  ○ Permissive             ││  │  ○ Gemma 4 2B Q4_K_M   [Download]      │
+│  │          │                           ││  │  + Import Custom GGUF                   │
+│  │          │  SPENDING: [$20 ▼] 17%    ││  │                                          │
+│  └──────────┴───────────────────────────┘│  └──────────────────────────────────────────┘
+└──────────────────────────────────────────┘
+</pre>
+
+<!-- ═══════════ SECTION 16 ═══════════ -->
+<h1 id="s16" class="page-break"><span class="section-number">16</span> Testing Strategy</h1>
+
+<h2>16.1 Unit Tests</h2>
+<table>
+  <thead><tr><th>Component</th><th>Coverage Target</th><th>Key Tests</th></tr></thead>
+  <tbody>
+    <tr><td>Document Parser</td><td>&gt; 90%</td><td>PDF/DOCX/PPTX parsing, edge cases (corrupt, empty, password-protected)</td></tr>
+    <tr><td>Text Chunker</td><td>&gt; 90%</td><td>Chunk size, overlap, boundary handling</td></tr>
+    <tr><td>Query Sanitizer</td><td>&gt; 95%</td><td>Filename stripping, PII detection, content fingerprinting</td></tr>
+    <tr><td>Vector DB</td><td>&gt; 85%</td><td>Index creation, search accuracy, persistence</td></tr>
+    <tr><td>Encryption</td><td>&gt; 95%</td><td>Encrypt/decrypt, key derivation, tampered ciphertext</td></tr>
+    <tr><td>Research Planner</td><td>&gt; 80%</td><td>Topic generation, knowledge gap identification</td></tr>
+    <tr><td>Audit Logger</td><td>&gt; 90%</td><td>Log creation, filtering, export</td></tr>
+  </tbody>
+</table>
+
+<h2>16.2 Integration Tests</h2>
+<table>
+  <thead><tr><th>Test Suite</th><th>Description</th><th>Acceptance Criteria</th></tr></thead>
+  <tbody>
+    <tr><td>Chat Flow</td><td>End-to-end: create → message → response → persist → restart → resume</td><td>All steps complete; history preserved</td></tr>
+    <tr><td>Document Analysis</td><td>Upload → parse → index → query → answer with citations</td><td>Relevant answer with page citations</td></tr>
+    <tr><td>Research Flow</td><td>Upload → analyze → research plan → approve → cloud → synthesis</td><td>Final answer with both sources</td></tr>
+    <tr><td>Privacy Pipeline</td><td>Generate query with PII → sanitize → verify clean → send</td><td>Zero PII in output</td></tr>
+    <tr><td>Multi-Provider</td><td>Research via OpenAI, Gemini, Claude</td><td>All providers return valid responses</td></tr>
+  </tbody>
+</table>
+
+<h2>16.3 Security &amp; Privacy Tests</h2>
+<table>
+  <thead><tr><th>Test Suite</th><th>Description</th><th>Acceptance Criteria</th></tr></thead>
+  <tbody>
+    <tr><td>Sanitization Fuzzing</td><td>10,000+ synthetic test cases with embedded PII</td><td>Zero false negatives; &lt; 1% false positives</td></tr>
+    <tr><td>Exfiltration Testing</td><td>Attempt data extraction via adversarial prompts</td><td>Zero document content in outbound requests</td></tr>
+    <tr><td>Encryption Verification</td><td>API keys encrypted at rest; tampered data rejected</td><td>All operations pass</td></tr>
+    <tr><td>Network Monitoring</td><td>Packet capture; verify no unexpected connections</td><td>Only configured endpoints; no document data</td></tr>
+    <tr><td>Penetration Testing</td><td>External security audit</td><td>Zero critical/high vulnerabilities</td></tr>
+    <tr><td>Zero Exfiltration</td><td>Process 100 docs with Research Mode; monitor traffic</td><td>Zero bytes of document content outbound</td></tr>
+    <tr><td>Offline Operation</td><td>Disconnect network; verify core features</td><td>All core features functional</td></tr>
+    <tr><td>Audit Completeness</td><td>Verify every request logged in dashboard</td><td>100% coverage</td></tr>
+  </tbody>
+</table>
+
+<h2>16.4 Performance Tests</h2>
+<table>
+  <thead><tr><th>Test</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr><td>Inference Benchmark (TTFT + tok/s)</td><td>&lt; 2s first token (GPU), &gt; 20 tok/s (GPU)</td></tr>
+    <tr><td>Document Parsing (50-page PDF)</td><td>&lt; 10 seconds</td></tr>
+    <tr><td>FAISS Search (100K vectors)</td><td>&lt; 50ms</td></tr>
+    <tr><td>Memory Profiling (2-hour session)</td><td>No leaks; &lt; 2x growth</td></tr>
+    <tr><td>Cold Start</td><td>&lt; 3 seconds</td></tr>
+  </tbody>
+</table>
+
+<h2>16.5 User Acceptance Tests</h2>
+<table>
+  <thead><tr><th>Test</th><th>Success Criteria</th></tr></thead>
+  <tbody>
+    <tr><td>First-Time Setup (non-technical user)</td><td>Completes in &lt; 10 min without docs</td></tr>
+    <tr><td>Document Analysis</td><td>4/5 answers rated "useful"</td></tr>
+    <tr><td>Research Mode</td><td>Full flow without confusion</td></tr>
+    <tr><td>Privacy Verification</td><td>User can identify every outbound request and verify no private data</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 17 ═══════════ -->
+<h1 id="s17" class="page-break"><span class="section-number">17</span> Business Model</h1>
+
+<h2>17.1 Pricing Tiers</h2>
+<table>
+  <thead><tr><th>Tier</th><th>Price</th><th>Features</th><th>Target User</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Free</strong></td><td>$0</td><td>Local AI chat; 10 docs/month; 2 hrs video/month; transparency dashboard; 1 cloud provider</td><td>Individuals, students, evaluation</td></tr>
+    <tr><td><strong>Pro</strong></td><td>$15/mo or $144/yr</td><td>Unlimited docs &amp; video; advanced model mgmt; research mode (BYOK); all providers; exports; compliance reports</td><td>Researchers, professionals</td></tr>
+    <tr><td><strong>Team</strong></td><td>$30/user/mo</td><td>All Pro + team deployment; centralized config; shared templates; admin dashboard; SSO; 5 seat min</td><td>Small teams, agencies</td></tr>
+    <tr><td><strong>Enterprise</strong></td><td>Custom</td><td>All Team + custom fine-tuning; on-prem option; dedicated support; SLA; compliance docs</td><td>Large orgs, regulated industries</td></tr>
+  </tbody>
+</table>
+
+<h2>17.2 Revenue Model</h2>
+<ul>
+  <li><strong>Primary:</strong> Subscription revenue from Pro, Team, and Enterprise tiers</li>
+  <li><strong>Secondary:</strong> Professional services (enterprise deployment, custom model training, compliance consulting)</li>
+  <li><strong>Core promise:</strong> Zero data collection, zero data monetization</li>
+</ul>
+
+<h2>17.3 Unit Economics (Projected Month 12)</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr><td>Free users</td><td>8,000</td></tr>
+    <tr><td>Pro subscribers</td><td>1,500</td></tr>
+    <tr><td>Team seats</td><td>500</td></tr>
+    <tr><td>Enterprise contracts</td><td>5</td></tr>
+    <tr><td>Avg. revenue per user (blended)</td><td>~$8.50/month</td></tr>
+    <tr><td>Monthly recurring revenue</td><td>~$85,000</td></tr>
+    <tr><td>CAC (individual)</td><td>&lt; $10</td></tr>
+    <tr><td>CAC (enterprise)</td><td>&lt; $500</td></tr>
+    <tr><td>LTV/CAC ratio</td><td>&gt; 5x</td></tr>
+  </tbody>
+</table>
+
+<h2>17.4 Go-to-Market Strategy</h2>
+<table>
+  <thead><tr><th>Phase</th><th>Timeline</th><th>Channel</th><th>Strategy</th></tr></thead>
+  <tbody>
+    <tr><td>Seed</td><td>Month 1–2</td><td>Hacker News, Reddit</td><td>"Show HN" post; technical deep-dive; privacy community</td></tr>
+    <tr><td>Launch</td><td>Month 3</td><td>Product Hunt</td><td>Product of the Day; demo video showing privacy flow</td></tr>
+    <tr><td>Growth</td><td>Month 4–6</td><td>Content, community</td><td>Blog posts; comparison guides; privacy advocate partnerships</td></tr>
+    <tr><td>Academic</td><td>Month 4–8</td><td>Universities</td><td>Free Pro for researchers; publish case studies</td></tr>
+    <tr><td>Enterprise</td><td>Month 7–12</td><td>Direct sales</td><td>Compliance officers, CISOs, CTOs; pilots; sales materials</td></tr>
+  </tbody>
+</table>
+
+<h2>17.5 Key Messages</h2>
+<ol>
+  <li>"Your documents never leave your device. Period."</li>
+  <li>"Cloud-powered research depth. Local-grade privacy."</li>
+  <li>"See exactly what your AI sends to the cloud. Every single request."</li>
+  <li>"The only AI assistant that can analyze your most sensitive documents without seeing them."</li>
+</ol>
+
+<!-- ═══════════ SECTION 18 ═══════════ -->
+<h1 id="s18" class="page-break"><span class="section-number">18</span> Success Metrics</h1>
+
+<h2>18.1 Product Metrics</h2>
+<table>
+  <thead><tr><th>Metric</th><th>6-Month Target</th><th>12-Month Target</th></tr></thead>
+  <tbody>
+    <tr><td>Monthly Active Users (MAU)</td><td>10,000</td><td>100,000</td></tr>
+    <tr><td>Daily Active Users (DAU)</td><td>2,000</td><td>25,000</td></tr>
+    <tr><td>DAU/MAU (Stickiness)</td><td>&gt; 20%</td><td>&gt; 25%</td></tr>
+    <tr><td>Documents Processed / User / Month</td><td>10</td><td>20</td></tr>
+    <tr><td>Research Mode Adoption</td><td>40%</td><td>60%</td></tr>
+    <tr><td>Avg. Session Duration</td><td>&gt; 15 min</td><td>&gt; 20 min</td></tr>
+    <tr><td>Time to First Value</td><td>&lt; 10 min</td><td>&lt; 5 min</td></tr>
+  </tbody>
+</table>
+
+<h2>18.2 Privacy Metrics</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr class="highlight"><td>Privacy Incidents</td><td><strong>Zero. Ever.</strong></td></tr>
+    <tr><td>Sanitization False Negative Rate</td><td>&lt; 0.01%</td></tr>
+    <tr><td>User Trust Score (survey)</td><td>&gt; 4.5/5</td></tr>
+    <tr><td>Transparency Dashboard Engagement</td><td>&gt; 30% of users view at least once</td></tr>
+  </tbody>
+</table>
+
+<h2>18.3 Technical Metrics</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr><td>Crash Rate</td><td>&lt; 0.1%</td></tr>
+    <tr><td>TTFT (GPU)</td><td>&lt; 2 seconds</td></tr>
+    <tr><td>Document Parse Success</td><td>&gt; 99%</td></tr>
+    <tr><td>Cloud API Error Rate</td><td>&lt; 1%</td></tr>
+    <tr><td>Startup Time</td><td>&lt; 3 seconds</td></tr>
+    <tr><td>Memory Leaks (4hr sessions)</td><td>Zero</td></tr>
+  </tbody>
+</table>
+
+<h2>18.4 Business Metrics</h2>
+<table>
+  <thead><tr><th>Metric</th><th>12-Month Target</th></tr></thead>
+  <tbody>
+    <tr><td>Monthly Recurring Revenue</td><td>$85,000</td></tr>
+    <tr><td>CAC (Individual)</td><td>&lt; $10</td></tr>
+    <tr><td>CAC (Enterprise)</td><td>&lt; $500</td></tr>
+    <tr><td>NPS</td><td>&gt; 50</td></tr>
+    <tr><td>Enterprise Pipeline</td><td>50+ qualified leads</td></tr>
+    <tr><td>Enterprise Contracts</td><td>5+</td></tr>
+    <tr><td>Monthly Churn</td><td>&lt; 5%</td></tr>
+  </tbody>
+</table>
+
+<h2>18.5 Research Quality Metrics</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr><td>Research Quality (vs. ChatGPT, user-rated)</td><td>&ge; 80%</td></tr>
+    <tr><td>Research Topic Relevance (human eval)</td><td>&gt; 80%</td></tr>
+    <tr><td>Source Attribution Accuracy</td><td>&gt; 95%</td></tr>
+    <tr><td>Research Response Latency</td><td>&lt; 5 seconds</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 19 ═══════════ -->
+<h1 id="s19" class="page-break"><span class="section-number">19</span> Future Roadmap</h1>
+
+<table>
+  <thead><tr><th>Feature</th><th>Description</th><th>Target Version</th></tr></thead>
+  <tbody>
+    <tr><td>Speaker Diarization</td><td>Identify different speakers in meeting recordings</td><td>v2.0 (Month 14)</td></tr>
+    <tr><td>Action Item Extraction</td><td>Auto-extract action items from transcripts</td><td>v2.0 (Month 14)</td></tr>
+    <tr><td>Knowledge Base</td><td>Persistent local KB that improves over time</td><td>v2.0 (Month 14)</td></tr>
+    <tr><td>Multi-Agent Workflows</td><td>Chain multiple AI agents for complex analysis</td><td>v2.0 (Month 15)</td></tr>
+    <tr><td>Plugin Architecture</td><td>Plugin API, community extensions, marketplace</td><td>v2.0 (Month 16)</td></tr>
+    <tr><td>macOS Support</td><td>Full macOS (Apple Silicon optimized)</td><td>v2.1 (Month 16)</td></tr>
+    <tr><td>Linux Support</td><td>Full Linux support</td><td>v2.1 (Month 17)</td></tr>
+    <tr><td>Team Collaboration</td><td>Shared research sessions (P2P); collaborative annotations</td><td>v2.2 (Month 18)</td></tr>
+    <tr><td>Self-Hosted Enterprise Server</td><td>On-prem deployment with centralized model serving</td><td>v2.2 (Month 18)</td></tr>
+    <tr><td>Automated Pipelines</td><td>Recurring analysis (e.g., "Analyze new SEC filings every Monday")</td><td>v3.0 (Month 20)</td></tr>
+    <tr><td>Batch Processing</td><td>Process hundreds of documents with structured output</td><td>v3.0 (Month 20)</td></tr>
+    <tr><td>Report Templates</td><td>SWOT, financial due diligence, literature review</td><td>v3.0 (Month 20)</td></tr>
+    <tr><td>Mobile Companion</td><td>Read-only mobile app for reviewing results</td><td>Year 2</td></tr>
+    <tr><td>Browser Extension</td><td>Web research capture with privacy controls</td><td>Year 2</td></tr>
+    <tr><td>API for Developers</td><td>REST API for programmatic access</td><td>Year 2</td></tr>
+    <tr><td>Custom Model Marketplace</td><td>Domain-specific fine-tuned models</td><td>Year 2</td></tr>
+    <tr><td>Federated Research</td><td>Optional sharing of research results across network</td><td>Year 3</td></tr>
+    <tr><td>AI Operating Environment</td><td>File system integration, cross-app intelligence</td><td>Year 2–3</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════ SECTION 20 ═══════════ -->
+<h1 id="s20" class="page-break"><span class="section-number">20</span> CTO Review</h1>
+
+<h2>20.1 Architectural Strengths</h2>
+<ol>
+  <li><strong>Clean separation of concerns</strong> — Local processing, cloud research, and security are well-isolated layers with clear interfaces.</li>
+  <li><strong>Tauri is the right choice</strong> — Smaller bundle, Rust backend for security-critical code, native performance, allowlist permissions.</li>
+  <li><strong>Offline-first architecture</strong> — Cloud is an enhancement, not a requirement.</li>
+  <li><strong>FAISS for vector search</strong> — Mature, high-performance, well-understood.</li>
+  <li><strong>llama.cpp for inference</strong> — Active community, broad hardware support, efficient quantization.</li>
+</ol>
+
+<h2>20.2 Architectural Weaknesses</h2>
+<table>
+  <thead><tr><th>Weakness</th><th>Risk</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td>Single LLM runtime dependency</td><td>Tightly coupled to llama.cpp</td><td>Abstract inference layer with trait-based interface; llama.cpp as one backend; ability to add candle, ort, vllm</td></tr>
+    <tr><td>SQLite for audit logs at scale</td><td>Performance degrades at millions of rows</td><td>Implement log rotation; archive old entries; per-user DB files for teams</td></tr>
+    <tr><td>No model hot-swapping</td><td>Gap when switching models</td><td>Model pool (1 in memory, preload second); loading state in UI</td></tr>
+    <tr><td>Sanitization single point of failure</td><td>If buggy, user data could leak</td><td>Defense in depth: sanitize text + monitor network traffic + fingerprinting + kill switch + adversarial testing</td></tr>
+    <tr><td>No offline model updates</td><td>Air-gapped machines can't update</td><td>USB/sideload model support; checksum verification; manual import (planned)</td></tr>
+    <tr><td>Frontend/Backend coupling</td><td>Tauri IPC tight coupling</td><td>Formal API contract; TypeScript types generated from Rust structs; version IPC protocol</td></tr>
+  </tbody>
+</table>
+
+<h2>20.3 Technical Risks</h2>
+<table>
+  <thead><tr><th>Risk</th><th>Severity</th><th>Likelihood</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr><td>Gemma 4 quality insufficient</td><td>High</td><td>Medium</td><td>Test early; support alternatives (Phi-4, Llama 3.3); prompt engineering; cloud fills gaps</td></tr>
+    <tr><td>Sanitization false negative</td><td>Critical</td><td>Low</td><td>Multi-layer defense; adversarial testing; bug bounty; user approval gate; network monitoring</td></tr>
+    <tr><td>Tauri 2.0 instability</td><td>Medium</td><td>Medium</td><td>Pin version; monitor releases; evaluate Electron as fallback</td></tr>
+    <tr><td>FAISS index corruption</td><td>Medium</td><td>Low</td><td>Regular backups; checksum verification; graceful rebuild</td></tr>
+    <tr><td>GPU driver incompatibility</td><td>Medium</td><td>Medium</td><td>CPU fallback; GPU detection; support CUDA/Vulkan/DirectML</td></tr>
+    <tr><td>Model supply chain attack</td><td>High</td><td>Low</td><td>SHA-256 verification; signed registry; provenance tracking</td></tr>
+  </tbody>
+</table>
+
+<h2>20.4 Scaling &amp; Product Risks</h2>
+<table>
+  <thead><tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr><td>Enterprise need multi-user deployment</td><td>Medium</td><td>Team deployment Phase 8; self-hosted server v2.2</td></tr>
+    <tr><td>Large corpora (1000+ docs) degrade perf</td><td>Medium</td><td>Index sharding; background indexing; configurable limits</td></tr>
+    <tr><td>Users don't understand hybrid architecture</td><td>Medium</td><td>Clear onboarding; "How it works" explainer; video tutorials</td></tr>
+    <tr><td>Research approval flow too cumbersome</td><td>Medium</td><td>Auto-approve option; smart defaults; UX testing</td></tr>
+    <tr><td>Competitors add privacy features</td><td>Medium</td><td>Move fast; deepen enterprise; build trust through transparency</td></tr>
+  </tbody>
+</table>
+
+<h2>20.5 Top 10 Recommendations Before Development Starts</h2>
+<ol>
+  <li><strong>Validate Gemma 4 on minimum hardware (8 GB RAM, no GPU) before committing.</strong> If quality or speed is unacceptable, adjust model strategy. Do this in Week 1.</li>
+  <li><strong>Build the sanitization pipeline first and test it adversarially.</strong> Start with 1,000 synthetic test cases, grow to 10,000+ before beta. If sanitization can't be made reliable, the product premise fails.</li>
+  <li><strong>Implement network traffic monitoring as a development tool.</strong> Every developer should see exactly what the application sends over the wire. This catches bugs early and builds confidence.</li>
+  <li><strong>Design the inference abstraction layer from day one.</strong> Don't hardcode llama.cpp calls. Create a <code>LocalLLM</code> trait in Rust with a clean interface. Implement llama.cpp as one backend.</li>
+  <li><strong>Start with PDF only and nail the experience.</strong> Get parsing, chunking, embedding, retrieval, and Q&amp;A working perfectly before adding other formats.</li>
+  <li><strong>Establish a benchmark suite before writing feature code.</strong> Define baselines (TTFT, generation speed, parse time, search latency) and run on every commit. Regressions block merges.</li>
+  <li><strong>Choose a prompt engineering framework and stick with it.</strong> Prompt templates should be version-controlled, testable, and separate from application code.</li>
+  <li><strong>Plan for Windows-specific edge cases from the start.</strong> File paths (backslashes, unicode, long paths), Windows Defender false positives, UAC, Credential Manager integration.</li>
+  <li><strong>Set up a privacy-focused CI pipeline.</strong> In addition to standard CI, add sanitization test suite and network monitoring on every PR. Regressions block merges.</li>
+  <li><strong>Hire or designate a security champion from Day 1.</strong> This person owns the threat model, reviews every outbound path, maintains adversarial tests, and has veto power over privacy-affecting changes. Non-negotiable.</li>
+</ol>
+
+<!-- ═══════════ APPENDIX ═══════════ -->
+<h1 class="page-break"><span class="section-number">A</span> Appendix A: Glossary</h1>
+
+<table>
+  <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+  <tbody>
+    <tr><td><strong>BYOK</strong></td><td>Bring Your Own Key — user provides their own cloud API keys</td></tr>
+    <tr><td><strong>FAISS</strong></td><td>Facebook AI Similarity Search — library for efficient vector similarity search</td></tr>
+    <tr><td><strong>GGUF</strong></td><td>File format for quantized local language models used by llama.cpp</td></tr>
+    <tr><td><strong>MarkItDown</strong></td><td>Microsoft's open-source library for converting documents to Markdown</td></tr>
+    <tr><td><strong>Faster-Whisper</strong></td><td>CTranslate2-based Whisper implementation for fast transcription</td></tr>
+    <tr><td><strong>NER</strong></td><td>Named Entity Recognition — NLP technique for identifying entities in text</td></tr>
+    <tr><td><strong>PII</strong></td><td>Personally Identifiable Information</td></tr>
+    <tr><td><strong>RAG</strong></td><td>Retrieval-Augmented Generation — retrieving relevant documents to augment LLM responses</td></tr>
+    <tr><td><strong>Sanitization</strong></td><td>Process of removing sensitive information before external transmission</td></tr>
+    <tr><td><strong>TLS</strong></td><td>Transport Layer Security — cryptographic protocol for secure communications</td></tr>
+    <tr><td><strong>TTFT</strong></td><td>Time to First Token — latency from request to first response token</td></tr>
+    <tr><td><strong>IPC</strong></td><td>Inter-Process Communication — communication between frontend and backend in Tauri</td></tr>
+  </tbody>
+</table>
+
+<h1><span class="section-number">B</span> Appendix B: System Requirements</h1>
+
+<table>
+  <thead><tr><th>Spec</th><th>Minimum</th><th>Recommended</th></tr></thead>
+  <tbody>
+    <tr><td>OS</td><td>Windows 10 (64-bit, build 1903+)</td><td>Windows 11</td></tr>
+    <tr><td>CPU</td><td>4-core x86_64</td><td>8-core+ x86_64</td></tr>
+    <tr><td>RAM</td><td>8 GB</td><td>16 GB+</td></tr>
+    <tr><td>GPU</td><td>None (CPU inference)</td><td>NVIDIA with 6 GB+ VRAM (CUDA 11.0+)</td></tr>
+    <tr><td>Storage</td><td>10 GB free</td><td>50 GB+ free</td></tr>
+    <tr><td>Internet</td><td>Not required</td><td>Broadband for cloud research</td></tr>
+    <tr><td>Screen</td><td>1280x720</td><td>1920x1080+</td></tr>
+  </tbody>
+</table>
+
+<h1><span class="section-number">C</span> Appendix C: Data Classification</h1>
+
+<table>
+  <thead><tr><th>Data Type</th><th>Storage</th><th>Transmitted?</th><th>Encryption at Rest</th></tr></thead>
+  <tbody>
+    <tr class="highlight"><td>User documents</td><td>Local filesystem</td><td><strong>NEVER</strong></td><td>Optional (BitLocker)</td></tr>
+    <tr><td>Document embeddings</td><td>Local FAISS index</td><td><strong>NEVER</strong></td><td>No (non-reversible)</td></tr>
+    <tr><td>Chat history</td><td>Local SQLite DB</td><td><strong>NEVER</strong></td><td>Optional</td></tr>
+    <tr class="highlight"><td>Cloud API keys</td><td>Local config file</td><td><strong>NEVER</strong></td><td><strong>AES-256-GCM</strong></td></tr>
+    <tr><td>Research queries</td><td>Sent to cloud API</td><td><strong>YES</strong> (sanitized)</td><td>In transit (TLS 1.3)</td></tr>
+    <tr><td>Research responses</td><td>Local SQLite DB</td><td>Received only</td><td>No</td></tr>
+    <tr><td>Audit logs</td><td>Local SQLite DB</td><td><strong>NEVER</strong></td><td>No</td></tr>
+    <tr><td>Video transcripts</td><td>Local SQLite DB</td><td><strong>NEVER</strong></td><td>No</td></tr>
+  </tbody>
+</table>
+
+<div style="margin-top: 3cm; padding-top: 1cm; border-top: 2px solid var(--accent); text-align: center;">
+  <p style="font-family: 'Cormorant Garamond', serif; font-size: 14pt; font-style: italic; color: var(--text-muted); text-align: center;">
+    "Private by Design. Intelligent by Collaboration."
+  </p>
+  <p style="font-family: 'DM Mono', monospace; font-size: 7.5pt; color: var(--text-muted); text-align: center; margin-top: 0.5cm; letter-spacing: 0.12em;">
+    END OF DOCUMENT — CONFIDENTIAL
+  </p>
+</div>
+
+</body>
+</html>

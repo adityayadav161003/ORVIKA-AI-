@@ -1,0 +1,7 @@
+markitdown
+torch
+sentence-transformers
+faster-whisper
+pytesseract
+pdf2image
+Pillow

@@ -3,9 +3,58 @@ use std::process::Command;
 use crate::llm::types::HardwareInfo;
 use crate::utils::error::{AppError, AppResult};
 
+fn detect_cpu_info() -> (String, u32, u32, f64) {
+    if cfg!(target_os = "windows") {
+        let name_out = Command::new("powershell")
+            .args(["-NoProfile", "-Command", "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name"])
+            .output();
+        let cpu_brand = name_out
+            .ok()
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+            .unwrap_or_else(|| "Unknown CPU".to_string());
+
+        let cores_out = Command::new("powershell")
+            .args(["-NoProfile", "-Command", "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty NumberOfCores"])
+            .output();
+        let physical_cores = cores_out
+            .ok()
+            .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<u32>().ok())
+            .unwrap_or(4);
+
+        let logical_out = Command::new("powershell")
+            .args(["-NoProfile", "-Command", "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty NumberOfLogicalProcessors"])
+            .output();
+        let logical_cores = logical_out
+            .ok()
+            .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<u32>().ok())
+            .unwrap_or(8);
+
+        let mem_out = Command::new("powershell")
+            .args(["-NoProfile", "-Command", "Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory"])
+            .output();
+        let total_memory_gb = mem_out
+            .ok()
+            .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<f64>().ok())
+            .map(|bytes| bytes / (1024.0 * 1024.0 * 1024.0))
+            .unwrap_or(16.0);
+
+        (cpu_brand, physical_cores, logical_cores, total_memory_gb)
+    } else {
+        ("Unknown CPU".to_string(), 4, 8, 16.0)
+    }
+}
+
 pub fn detect_hardware() -> HardwareInfo {
-    if let Some(gpu) = detect_nvidia_gpu() {
-        return gpu;
+    let (cpu_brand, physical_cores, logical_cores, total_memory_gb) = detect_cpu_info();
+
+    let mut gpu = detect_nvidia_gpu();
+    if let Some(ref mut info) = gpu {
+        info.cpu_brand = cpu_brand;
+        info.physical_cores = physical_cores;
+        info.logical_cores = logical_cores;
+        info.total_memory_gb = total_memory_gb;
+        info.has_nvidia_gpu = true;
+        return info.clone();
     }
 
     HardwareInfo {
@@ -15,8 +64,14 @@ pub fn detect_hardware() -> HardwareInfo {
         vram_free_mb: None,
         recommended_gpu_layers: 0,
         backend: "cpu".to_string(),
+        cpu_brand,
+        physical_cores,
+        logical_cores,
+        total_memory_gb,
+        has_nvidia_gpu: false,
     }
 }
+
 
 fn detect_nvidia_gpu() -> Option<HardwareInfo> {
     let output = Command::new("nvidia-smi")
@@ -67,8 +122,14 @@ fn detect_nvidia_gpu() -> Option<HardwareInfo> {
         vram_free_mb,
         recommended_gpu_layers,
         backend: "cuda".to_string(),
+        cpu_brand: "Unknown".to_string(),
+        physical_cores: 0,
+        logical_cores: 0,
+        total_memory_gb: 0.0,
+        has_nvidia_gpu: true,
     })
 }
+
 
 pub fn gpu_layers_flag(hardware: &HardwareInfo) -> Vec<String> {
     if hardware.gpu_available && hardware.recommended_gpu_layers > 0 {

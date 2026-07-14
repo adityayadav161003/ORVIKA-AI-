@@ -68,6 +68,11 @@ pub struct HardwareInfo {
     pub vram_free_mb: Option<u64>,
     pub recommended_gpu_layers: u32,
     pub backend: String,
+    pub cpu_brand: String,
+    pub physical_cores: u32,
+    pub logical_cores: u32,
+    pub total_memory_gb: f64,
+    pub has_nvidia_gpu: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -39,7 +39,7 @@ impl SyncService {
                 .unwrap_or_default()
                 .unwrap_or_else(|| "".to_string());
             Ok((enabled, url, token))
-        }).map_err(|e: rusqlite::Error| e.to_string())?;
+        }).map_err(|e| e.to_string())?;
 
         if !enabled || url.is_empty() {
             return Ok(());
@@ -54,11 +54,12 @@ impl SyncService {
                 .duration_since(UNIX_EPOCH)
                 .map(|d| d.as_secs())
                 .unwrap_or(0);
-            Ok::<serde_json::Value, rusqlite::Error>(serde_json::json!({
+            Ok(serde_json::json!({
                 "sessions": sessions,
                 "timestamp": timestamp
             }))
-        }).map_err(|e: rusqlite::Error| e.to_string())?;
+        }).map_err(|e| e.to_string())?;
+
 
         // 2. Perform outbound HTTP POST request using reqwest Client
         let client = reqwest::Client::new();
@@ -84,4 +85,5 @@ impl SyncService {
         }
 
         Ok(())
+    }
 }

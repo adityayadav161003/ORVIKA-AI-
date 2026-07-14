@@ -185,7 +185,7 @@ pub fn generate_compliance_report(
                 } else {
                     Ok(None)
                 }
-            }).map_err(|e: rusqlite::Error| e.to_string())?;
+            }).map_err(|e| e.to_string())?;
 
             if let Some((_id, name, description, checkpoints_str)) = custom_tpl {
                 let checkpoints_val: serde_json::Value = serde_json::from_str(&checkpoints_str)

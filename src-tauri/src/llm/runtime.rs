@@ -5,12 +5,14 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use reqwest::Client;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::llm::config::{self, server_base_url, DEFAULT_HOST, DEFAULT_PORT, HEALTH_PATH};
 use crate::llm::hardware::{detect_hardware, gpu_layers_flag};
 use crate::llm::types::{LlmServerState, LlmStatus};
+use crate::db::Database;
 use crate::utils::error::{AppError, AppResult};
+
 
 pub struct LlmRuntime {
     pub app_data_dir: std::path::PathBuf,

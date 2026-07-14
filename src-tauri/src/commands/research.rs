@@ -21,6 +21,7 @@ use crate::security::pii_detector;
 use crate::security::Aes256GcmCipher;
 use crate::python::manager::PythonManager;
 use crate::vector_store::VectorStore;
+use crate::cloud::traits::CloudProvider;
 
 #[derive(Debug, Deserialize)]
 pub struct ResearchPlanResponse {
@@ -329,10 +330,11 @@ pub async fn execute_research(
 
         // Check cache
         let cached = database.with_connection(|conn| {
-            crate::cloud::cache::get_cached_response(conn, &q.sanitized_query)
-        });
+            Ok(crate::cloud::cache::get_cached_response(conn, &q.sanitized_query))
+        }).ok().flatten();
 
         let response_text = if let Some(cached_resp) = cached {
+
             let _ = app.emit("research-status-update", serde_json::json!({
                 "status": format!("💡 Found cached response for '{}'...", q.topic)
             }));
@@ -353,14 +355,12 @@ pub async fn execute_research(
             }
 
             // Execute cloud provider call
-            let provider: Box<dyn crate::cloud::traits::CloudProvider> = match provider_name.as_str() {
-                "openai" => Box::new(crate::cloud::openai::OpenAiProvider),
-                "gemini" => Box::new(crate::cloud::gemini::GeminiProvider),
-                "anthropic" => Box::new(crate::cloud::claude::ClaudeProvider),
+            let res = match provider_name.as_str() {
+                "openai" => crate::cloud::openai::OpenAiProvider.execute_query(&q.sanitized_query, &api_key).await,
+                "gemini" => crate::cloud::gemini::GeminiProvider.execute_query(&q.sanitized_query, &api_key).await,
+                "anthropic" => crate::cloud::claude::ClaudeProvider.execute_query(&q.sanitized_query, &api_key).await,
                 _ => return Err(format!("Unsupported cloud provider: {}", provider_name)),
-            };
-
-            let res = provider.execute_query(&q.sanitized_query, &api_key).await.map_err(|e| e.to_string())?;
+            }.map_err(|e| e.to_string())?;
 
             // Log successful outbound cloud call
             let _ = database.with_connection(|conn| {

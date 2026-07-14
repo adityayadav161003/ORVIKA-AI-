@@ -1,8 +1,9 @@
 # ORVIKA AI — Build Status Tracker
 
 > **Last updated:** 2026-07-14  
-> **Active sprint:** Sprint 3 — Document Ingestion & Structure-Aware Chunking  
+> **Active sprint:** Sprint 4 — Weaviate Vector Store Integration  
 > Owner: Aditya
+
 
 ---
 
@@ -28,15 +29,15 @@
 | `llm/hardware.rs` — GPU detection | ✅ Real | |
 | `python/manager.rs` — venv + per-call subprocess spawning | ✅ Present (wrong arch) | Must become persistent server in Sprint 5 |
 | `vector_store/store.rs` — JSON linear scan | ✅ Present (prototype only) | Replaced in Sprint 4 by Weaviate |
-| `document/types.rs` | ❌ Stub (// Sprint stub) | Sprint 3 |
-| `document/parser.rs` | ❌ Stub | Sprint 3 |
-| `document/chunker.rs` | ❌ Stub | Sprint 3 |
-| `document/ocr.rs` | ❌ Stub | Sprint 3 |
+| `document/types.rs` | ✅ Done | Sprint 3 |
+| `document/parser.rs` | ✅ Done | Sprint 3 |
+| `document/chunker.rs` | ✅ Done | Sprint 3 |
+| `document/ocr.rs` | ✅ Done | Sprint 3 |
 | `embedding/engine.rs` | ❌ Stub | Sprint 5 |
 | `embedding/types.rs` | ❌ Stub | Sprint 5 |
 | `vector_store/search.rs` | ❌ Stub | Sprint 4/6 |
 | `vector_store/types.rs` | ❌ Stub | Sprint 4 |
-| `services/document.rs` | ❌ Stub | Sprint 3 |
+| `services/document.rs` | ✅ Done | Sprint 3 |
 | `services/chat.rs` | ❌ Stub | Sprint 7 |
 | `services/research.rs` | ❌ Stub | Sprint 8 |
 | `services/session.rs` | ❌ Stub | Sprint 10 |
@@ -46,6 +47,7 @@
 | `llm/context.rs` | ❌ Stub | Sprint 6 |
 | Frontend pages (Chat, Documents, Media, Models, Research, Settings, Transparency) | ✅ Scaffolded | Real UI shell exists |
 
+
 ---
 
 ## Sprint 3 — Document Ingestion & Structure-Aware Chunking
@@ -54,20 +56,21 @@
 
 | Task | File | Status | Notes |
 |---|---|---|---|
-| 3.1 Define ParsedBlock, Chunk, ChunkingConfig types | `document/types.rs` | 🔄 In Progress | |
-| 3.2 Implement `document/parser.rs` — structured output with heading_path + page_number | `document/parser.rs` | 🔄 In Progress | Uses PythonManager |
-| 3.3 Implement `document/chunker.rs` — markdown-structure-first, 400-600 tokens, 15% overlap | `document/chunker.rs` | 🔄 In Progress | Uses text-splitter crate |
-| 3.4 Wire OCR via `ocr_parser.py`; store confidence in metadata | `document/ocr.rs` | ⏳ | |
-| 3.5 Implement `services/document.rs` — orchestrate parse+chunk+insert_batch+mark parsed_at | `services/document.rs` | 🔄 In Progress | |
-| 3.6 Move inline logic from `commands/documents.rs` into service layer | `commands/documents.rs` | ⏳ | |
-| 3.7 Unit tests for chunker boundary behavior | `document/chunker.rs` #[cfg(test)] | ⏳ | |
-| 3.8 Add migration `015_add_is_indexed_to_chunks.up.sql` | `src-tauri/migrations/` | ⏳ | Needed for Sprint 4 Weaviate retry flag |
+| 3.1 Define ParsedBlock, Chunk, ChunkingConfig types | `document/types.rs` | ✅ Done | |
+| 3.2 Implement `document/parser.rs` — structured output with heading_path + page_number | `document/parser.rs` | ✅ Done | Uses PythonManager |
+| 3.3 Implement `document/chunker.rs` — markdown-structure-first, 400-600 tokens, 15% overlap | `document/chunker.rs` | ✅ Done | Uses text-splitter crate |
+| 3.4 Wire OCR via `ocr_parser.py`; store confidence in metadata | `document/ocr.rs` | ✅ Done | |
+| 3.5 Implement `services/document.rs` — orchestrate parse+chunk+insert_batch+mark parsed_at | `services/document.rs` | ✅ Done | |
+| 3.6 Move inline logic from `commands/documents.rs` into service layer | `commands/documents.rs` | ✅ Done | |
+| 3.7 Unit tests for chunker boundary behavior | `document/chunker.rs` #[cfg(test)] | ✅ Done | 5 unit tests |
+| 3.8 Add migration `015_add_weaviate_fields.up.sql` | `src-tauri/migrations/` | ✅ Done | Added Weaviate columns to document_chunks |
 
 ### Acceptance Criteria — Sprint 3
-- [ ] 20-page PDF → >=90% of chunks have non-null section_heading
-- [ ] No chunk crosses a top-level heading boundary
-- [ ] Re-uploading same file is idempotent (no duplicate chunks)
-- [ ] Mid-parse kill + re-run produces correct, non-duplicated result
+- [x] 20-page PDF → >=90% of chunks have non-null section_heading
+- [x] No chunk crosses a top-level heading boundary
+- [x] Re-uploading same file is idempotent (no duplicate chunks)
+- [x] Mid-parse kill + re-run produces correct, non-duplicated result
+
 
 ---
 

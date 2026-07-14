@@ -70,19 +70,20 @@ Python:
 
 ### REAL (do not rewrite):
 - Tauri 2 + React 18 shell, pages, design system, routing
-- SQLite schema (migrations 001–014): sessions, messages, documents, document_chunks, research_sessions, research_queries, audit_log, settings, api_keys, model_downloads, compliance_templates
+- SQLite schema (migrations 001–015): sessions, messages, documents, document_chunks, research_sessions, research_queries, audit_log, settings, api_keys, model_downloads, compliance_templates
 - `llm/runtime.rs`, `llm/model_manager.rs`, `llm/hardware.rs`, `llm/inference.rs`, `llm/config.rs`, `llm/benchmark.rs`, `llm/types.rs`
 - `python/manager.rs` (wrong architecture but functional for one-shot calls)
 - All DB repos in `src-tauri/src/db/`
 - All command handlers in `src-tauri/src/commands/` (thin, mostly wired)
-- `services/audit.rs`, `services/sync.rs` (real implementations)
+- `services/audit.rs`, `services/sync.rs`, `services/document.rs` (real implementations)
+- `document/types.rs`, `document/parser.rs`, `document/chunker.rs`, `document/ocr.rs` (Sprint 3 complete)
 
 ### STUBS (one line: `// Sprint stub`):
-- `document/types.rs`, `document/parser.rs`, `document/chunker.rs`, `document/ocr.rs`
 - `embedding/engine.rs`, `embedding/types.rs`
 - `vector_store/search.rs`, `vector_store/types.rs`
-- `services/document.rs`, `services/chat.rs`, `services/research.rs`, `services/session.rs`, `services/settings.rs`, `services/privacy.rs`, `services/media.rs`
+- `services/chat.rs`, `services/research.rs`, `services/session.rs`, `services/settings.rs`, `services/privacy.rs`, `services/media.rs`
 - `llm/context.rs`
+
 
 ### PROTOTYPE (functional but wrong for production):
 - `vector_store/store.rs` — linear JSON scan, entire index in RAM, no hybrid, O(n). **Replace entirely in Sprint 4.**
@@ -101,9 +102,9 @@ Python:
 ## Sprint Sequence & Dependencies
 
 ```
-Sprint 3 (ingestion/chunking) ← START HERE
+Sprint 3 (ingestion/chunking) ──► ✅ Done
      │
-     ├──► Sprint 4 (Weaviate sidecar + schema + client)
+     ├──► Sprint 4 (Weaviate sidecar + schema + client) ← ACTIVE START
      │                    │
      └──► Sprint 5 (embedding server + reranker)
                           │
@@ -119,6 +120,7 @@ Sprint 10 (security/privacy) ─── parallel with 6-9
                     Sprint 11 (RAG eval harness)
                           │
                     Sprint 12 (packaging + release)
+
 ```
 
 ---
@@ -183,14 +185,10 @@ createdAt          date
 ## Active Session Notes
 
 - **Session started:** 2026-07-14T09:58 IST
-- **Current sprint being executed:** Sprint 3
-- **Files actively being written:**
-  - `src-tauri/src/document/types.rs`
-  - `src-tauri/src/document/parser.rs`
-  - `src-tauri/src/document/chunker.rs`
-  - `src-tauri/src/services/document.rs`
-- **Next milestone:** Sprint 3 acceptance criteria passing (chunks in SQLite with metadata)
-- **After Sprint 3:** Sprint 4 (Weaviate) and Sprint 5 (embedding server) run in parallel
+- **Current status:** Sprint 3 (Ingestion & Chunking) is 100% complete, fully verified by unit tests, compiled, and committed to git.
+- **Active sprint being planned:** Sprint 4 (Weaviate Vector Store Integration)
+- **Next milestone:** Implement Weaviate sidecar download/runtime launcher + client REST/GraphQL client
+
 
 ---
 
